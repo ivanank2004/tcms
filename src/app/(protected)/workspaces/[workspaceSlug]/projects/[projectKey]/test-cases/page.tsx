@@ -10,7 +10,6 @@ import { TestCaseActions } from "@/components/test-case-actions";
 import {
   PRIORITY_CONFIG,
   LIFECYCLE_CONFIG,
-  TEST_TYPE_TAXONOMY,
   PRIORITIES,
   LIFECYCLES,
   type Priority,
@@ -22,9 +21,6 @@ import {
   CheckSquare,
   Plus,
   Search,
-  Filter,
-  Layers,
-  ArrowRight,
   GitBranch,
 } from "lucide-react";
 
@@ -69,7 +65,7 @@ export default async function TestCasesRepositoryPage({
   const canMutate = membership.role !== "viewer" && project.status === "active";
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       {/* Breadcrumbs */}
       <Breadcrumbs
         items={[
@@ -80,20 +76,20 @@ export default async function TestCasesRepositoryPage({
       />
 
       {/* Repository Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-slate-800">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-zinc-800/80">
         <div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold text-white tracking-tight">Test Cases</h1>
-            <span className="font-mono text-xs font-semibold px-2.5 py-0.5 rounded bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+          <div className="flex items-center gap-2.5">
+            <h1 className="text-xl font-semibold text-zinc-100 tracking-tight">Test Cases</h1>
+            <span className="font-mono text-xs font-semibold px-2 py-0.5 rounded-md bg-zinc-800 text-zinc-300 border border-zinc-700/60">
               {project.key}
             </span>
           </div>
-          <p className="text-xs text-slate-400 mt-1">
-            Reusable test repository for {project.name} • {result.total} total scenario(s)
+          <p className="text-xs text-zinc-400 mt-0.5">
+            Repository for {project.name} • {result.total} scenario(s)
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5 flex-wrap">
+        <div className="flex items-center gap-2 flex-wrap">
           <CSVExportButton projectId={project.id} projectKey={project.key} />
           {canMutate && (
             <CSVImportModal
@@ -105,7 +101,7 @@ export default async function TestCasesRepositoryPage({
           {canMutate && (
             <Link
               href={`/workspaces/${workspace.slug}/projects/${project.key}/test-cases/new`}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium rounded-lg shadow-sm transition"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-zinc-100 hover:bg-zinc-200 text-zinc-950 text-xs font-medium rounded-lg transition"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>New Test Case</span>
@@ -115,15 +111,15 @@ export default async function TestCasesRepositoryPage({
       </div>
 
       {/* Filter & Search Bar */}
-      <form method="GET" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+      <form method="GET" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2.5">
         {/* Search */}
         <div className="relative lg:col-span-2">
-          <Search className="w-3.5 h-3.5 text-slate-500 absolute left-3 top-3 pointer-events-none" />
+          <Search className="w-3.5 h-3.5 text-zinc-500 absolute left-2.5 top-2.5 pointer-events-none" />
           <input
             name="search"
             defaultValue={sParams.search || ""}
             placeholder="Search by ID, title, or objective..."
-            className="w-full pl-9 pr-3 py-2 bg-slate-900 border border-slate-800 rounded-lg text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            className="w-full pl-8 pr-3 py-1.5 bg-zinc-950 border border-zinc-800 rounded-lg text-xs text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:border-zinc-500"
           />
         </div>
 
@@ -131,7 +127,7 @@ export default async function TestCasesRepositoryPage({
         <select
           name="moduleId"
           defaultValue={sParams.moduleId || ""}
-          className="px-3 py-2 bg-slate-900 border border-slate-800 rounded-lg text-xs text-slate-300 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          className="px-2.5 py-1.5 bg-zinc-950 border border-zinc-800 rounded-lg text-xs text-zinc-300 focus:outline-none focus:border-zinc-500"
         >
           <option value="">All Modules</option>
           {modules.map((m) => (
@@ -145,7 +141,7 @@ export default async function TestCasesRepositoryPage({
         <select
           name="lifecycle"
           defaultValue={sParams.lifecycle || ""}
-          className="px-3 py-2 bg-slate-900 border border-slate-800 rounded-lg text-xs text-slate-300 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          className="px-2.5 py-1.5 bg-zinc-950 border border-zinc-800 rounded-lg text-xs text-zinc-300 focus:outline-none focus:border-zinc-500"
         >
           <option value="">All Lifecycles</option>
           {LIFECYCLES.map((l) => (
@@ -160,7 +156,7 @@ export default async function TestCasesRepositoryPage({
           <select
             name="priority"
             defaultValue={sParams.priority || ""}
-            className="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-lg text-xs text-slate-300 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            className="w-full px-2.5 py-1.5 bg-zinc-950 border border-zinc-800 rounded-lg text-xs text-zinc-300 focus:outline-none focus:border-zinc-500"
           >
             <option value="">All Priorities</option>
             {PRIORITIES.map((p) => (
@@ -171,7 +167,7 @@ export default async function TestCasesRepositoryPage({
           </select>
           <button
             type="submit"
-            className="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-200 rounded-lg transition"
+            className="px-3 py-1.5 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-xs font-medium text-zinc-300 rounded-lg transition"
           >
             Filter
           </button>
@@ -179,14 +175,14 @@ export default async function TestCasesRepositoryPage({
       </form>
 
       {/* Test Cases Table */}
-      <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-sm">
+      <div className="bg-zinc-900/40 border border-zinc-800/80 rounded-xl overflow-hidden shadow-xs">
         {result.items.length === 0 ? (
-          <div className="p-12 text-center">
-            <div className="w-12 h-12 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center mx-auto mb-3">
-              <CheckSquare className="w-6 h-6" />
+          <div className="p-10 text-center">
+            <div className="w-10 h-10 rounded-lg bg-zinc-900 text-zinc-400 flex items-center justify-center mx-auto mb-3 border border-zinc-800">
+              <CheckSquare className="w-5 h-5" />
             </div>
-            <h3 className="text-sm font-semibold text-white">No test cases found</h3>
-            <p className="text-xs text-slate-400 max-w-sm mx-auto mt-1 mb-5">
+            <h3 className="text-sm font-semibold text-zinc-200">No test cases found</h3>
+            <p className="text-xs text-zinc-500 max-w-sm mx-auto mt-1 mb-4">
               {sParams.search || sParams.moduleId || sParams.lifecycle
                 ? "No test cases matched your filter criteria."
                 : "Create your first reusable test case or import via CSV."}
@@ -194,7 +190,7 @@ export default async function TestCasesRepositoryPage({
             {canMutate && (
               <Link
                 href={`/workspaces/${workspace.slug}/projects/${project.key}/test-cases/new`}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium rounded-lg transition"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-zinc-100 hover:bg-zinc-200 text-zinc-950 text-xs font-medium rounded-lg transition"
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>New Test Case</span>
@@ -203,27 +199,27 @@ export default async function TestCasesRepositoryPage({
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs text-slate-300">
-              <thead className="bg-slate-950/70 text-slate-400 border-b border-slate-800 font-medium">
+            <table className="w-full text-left text-xs text-zinc-300">
+              <thead className="bg-zinc-950/70 text-zinc-400 border-b border-zinc-800/80 font-medium">
                 <tr>
-                  <th scope="col" className="px-4 py-3">ID</th>
-                  <th scope="col" className="px-4 py-3">Title</th>
-                  <th scope="col" className="px-4 py-3">Module</th>
-                  <th scope="col" className="px-4 py-3">Priority</th>
-                  <th scope="col" className="px-4 py-3">Types</th>
-                  <th scope="col" className="px-4 py-3">Lifecycle</th>
-                  <th scope="col" className="px-4 py-3">Rev</th>
-                  <th scope="col" className="px-4 py-3 text-right">Actions</th>
+                  <th scope="col" className="px-4 py-2.5">ID</th>
+                  <th scope="col" className="px-4 py-2.5">Title</th>
+                  <th scope="col" className="px-4 py-2.5">Module</th>
+                  <th scope="col" className="px-4 py-2.5">Priority</th>
+                  <th scope="col" className="px-4 py-2.5">Types</th>
+                  <th scope="col" className="px-4 py-2.5">Lifecycle</th>
+                  <th scope="col" className="px-4 py-2.5">Rev</th>
+                  <th scope="col" className="px-4 py-2.5 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/60">
+              <tbody className="divide-y divide-zinc-800/60">
                 {result.items.map(({ testCase: tc, moduleName }) => {
                   const priority = tc.priority as Priority;
                   const lifecycle = tc.lifecycle as Lifecycle;
 
                   return (
-                    <tr key={tc.id} className="hover:bg-slate-800/30 transition group">
-                      <td className="px-4 py-3 font-mono font-semibold text-indigo-400 shrink-0">
+                    <tr key={tc.id} className="hover:bg-zinc-900/50 transition group">
+                      <td className="px-4 py-2.5 font-mono font-medium text-zinc-200 shrink-0">
                         <Link
                           href={`/workspaces/${workspace.slug}/projects/${project.key}/test-cases/${tc.id}`}
                           className="hover:underline"
@@ -231,59 +227,59 @@ export default async function TestCasesRepositoryPage({
                           {tc.stableId}
                         </Link>
                       </td>
-                      <td className="px-4 py-3 font-medium text-white max-w-md">
+                      <td className="px-4 py-2.5 font-medium text-zinc-200 max-w-md">
                         <Link
                           href={`/workspaces/${workspace.slug}/projects/${project.key}/test-cases/${tc.id}`}
-                          className="hover:text-indigo-300 transition line-clamp-1"
+                          className="hover:text-white transition line-clamp-1"
                         >
                           {tc.title}
                         </Link>
                       </td>
-                      <td className="px-4 py-3 text-slate-400 truncate max-w-[140px]">
-                        {moduleName || <span className="text-slate-600">—</span>}
+                      <td className="px-4 py-2.5 text-zinc-400 truncate max-w-[140px]">
+                        {moduleName || <span className="text-zinc-600">—</span>}
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-2.5">
                         <span
-                          className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${
+                          className={`text-[10px] font-medium px-2 py-0.5 rounded-md border ${
                             PRIORITY_CONFIG[priority]?.badgeClass || ""
                           }`}
                         >
                           {PRIORITY_CONFIG[priority]?.label || priority}
                         </span>
                       </td>
-                      <td className="px-4 py-3 max-w-xs">
+                      <td className="px-4 py-2.5 max-w-xs">
                         <div className="flex items-center gap-1 flex-wrap">
                           {tc.testTypes.slice(0, 2).map((t) => (
                             <span
                               key={t}
-                              className="text-[9px] px-1.5 py-0.2 rounded bg-slate-800 text-slate-300 border border-slate-700"
+                              className="text-[9px] px-1.5 py-0.2 rounded-md bg-zinc-900 text-zinc-400 border border-zinc-800"
                             >
                               {t}
                             </span>
                           ))}
                           {tc.testTypes.length > 2 && (
-                            <span className="text-[9px] text-slate-500 font-mono">
+                            <span className="text-[9px] text-zinc-500 font-mono">
                               +{tc.testTypes.length - 2}
                             </span>
                           )}
                         </div>
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-2.5">
                         <span
-                          className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border capitalize ${
+                          className={`text-[10px] font-medium px-2 py-0.5 rounded-md border capitalize ${
                             LIFECYCLE_CONFIG[lifecycle]?.badgeClass || ""
                           }`}
                         >
                           {LIFECYCLE_CONFIG[lifecycle]?.label || lifecycle}
                         </span>
                       </td>
-                      <td className="px-4 py-3 font-mono text-[11px] text-slate-500">
+                      <td className="px-4 py-2.5 font-mono text-[11px] text-zinc-500">
                         <span className="inline-flex items-center gap-1">
-                          <GitBranch className="w-3 h-3 text-slate-600" />
+                          <GitBranch className="w-3 h-3 text-zinc-600" />
                           v{tc.revision}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-right">
+                      <td className="px-4 py-2.5 text-right">
                         <TestCaseActions
                           workspaceId={workspace.id}
                           projectId={project.id}
@@ -303,7 +299,7 @@ export default async function TestCasesRepositoryPage({
 
       {/* Pagination Footer */}
       {result.totalPages > 1 && (
-        <div className="flex items-center justify-between text-xs text-slate-500 pt-2">
+        <div className="flex items-center justify-between text-xs text-zinc-500 pt-2">
           <span>
             Page {result.page} of {result.totalPages}
           </span>
@@ -311,7 +307,7 @@ export default async function TestCasesRepositoryPage({
             {result.page > 1 && (
               <Link
                 href={`?page=${result.page - 1}`}
-                className="px-2.5 py-1 rounded bg-slate-800 text-slate-300 hover:bg-slate-700 transition"
+                className="px-2.5 py-1 rounded-md bg-zinc-900 border border-zinc-800 text-zinc-300 hover:bg-zinc-800 transition"
               >
                 Previous
               </Link>
@@ -319,7 +315,7 @@ export default async function TestCasesRepositoryPage({
             {result.page < result.totalPages && (
               <Link
                 href={`?page=${result.page + 1}`}
-                className="px-2.5 py-1 rounded bg-slate-800 text-slate-300 hover:bg-slate-700 transition"
+                className="px-2.5 py-1 rounded-md bg-zinc-900 border border-zinc-800 text-zinc-300 hover:bg-zinc-800 transition"
               >
                 Next
               </Link>

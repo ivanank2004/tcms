@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { Plus, Trash2, ArrowUp, ArrowDown } from "lucide-react";
 import type { StepInput } from "@/lib/test-cases/actions";
 
@@ -54,13 +53,13 @@ export function OrderedStepsEditor({
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <label className="block text-xs font-medium text-slate-300">
+        <label className="block text-xs font-medium text-zinc-300">
           Ordered Test Steps ({steps.length})
         </label>
         <button
           type="button"
           onClick={addStep}
-          className="inline-flex items-center gap-1 text-xs font-medium text-indigo-400 hover:text-indigo-300 transition"
+          className="inline-flex items-center gap-1 text-xs font-medium text-zinc-300 hover:text-white transition"
         >
           <Plus className="w-3.5 h-3.5" />
           Add Step
@@ -68,25 +67,25 @@ export function OrderedStepsEditor({
       </div>
 
       {steps.length === 0 ? (
-        <div className="p-4 border border-dashed border-slate-800 rounded-lg text-center bg-slate-950/40">
-          <p className="text-xs text-slate-500">No steps defined yet. Click "Add Step" to begin.</p>
+        <div className="p-4 border border-dashed border-zinc-800 rounded-lg text-center bg-zinc-950/40">
+          <p className="text-xs text-zinc-500">No steps defined yet. Click "Add Step" to begin.</p>
         </div>
       ) : (
-        <div className="space-y-2.5">
+        <div className="space-y-2">
           {steps.map((step, idx) => (
             <div
               key={idx}
-              className="p-3 bg-slate-950 border border-slate-800 rounded-lg space-y-2 relative group"
+              className="p-3 bg-zinc-950/60 border border-zinc-800 rounded-lg space-y-2 relative group"
             >
-              <div className="flex items-center justify-between text-xs text-slate-400">
-                <span className="font-semibold text-indigo-400">Step {step.stepNumber}</span>
+              <div className="flex items-center justify-between text-xs text-zinc-400">
+                <span className="font-mono font-medium text-zinc-200">Step {step.stepNumber}</span>
 
                 <div className="flex items-center gap-1">
                   <button
                     type="button"
                     onClick={() => moveStep(idx, "up")}
                     disabled={idx === 0}
-                    className="p-1 text-slate-500 hover:text-slate-300 disabled:opacity-30 disabled:hover:text-slate-500 transition"
+                    className="p-1 text-zinc-500 hover:text-zinc-300 disabled:opacity-30 disabled:hover:text-zinc-500 transition"
                     title="Move Step Up"
                   >
                     <ArrowUp className="w-3.5 h-3.5" />
@@ -95,7 +94,7 @@ export function OrderedStepsEditor({
                     type="button"
                     onClick={() => moveStep(idx, "down")}
                     disabled={idx === steps.length - 1}
-                    className="p-1 text-slate-500 hover:text-slate-300 disabled:opacity-30 disabled:hover:text-slate-500 transition"
+                    className="p-1 text-zinc-500 hover:text-zinc-300 disabled:opacity-30 disabled:hover:text-zinc-500 transition"
                     title="Move Step Down"
                   >
                     <ArrowDown className="w-3.5 h-3.5" />
@@ -103,7 +102,7 @@ export function OrderedStepsEditor({
                   <button
                     type="button"
                     onClick={() => removeStep(idx)}
-                    className="p-1 text-slate-500 hover:text-red-400 transition ml-1"
+                    className="p-1 text-zinc-500 hover:text-rose-400 transition ml-1"
                     title="Delete Step"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
@@ -117,8 +116,8 @@ export function OrderedStepsEditor({
                   required
                   value={step.instruction}
                   onChange={(e) => updateStep(idx, "instruction", e.target.value)}
-                  placeholder="Action instruction (e.g. Navigate to /checkout and click 'Pay Now')"
-                  className="w-full px-3 py-1.5 bg-slate-900 border border-slate-800 rounded text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  placeholder="Action instruction (e.g. Dispatch POST /api/v1/auth/tokens with valid body)"
+                  className="w-full px-2.5 py-1.5 bg-zinc-900 border border-zinc-800 rounded-md text-xs text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:border-zinc-500 transition"
                 />
               </div>
 
@@ -127,8 +126,8 @@ export function OrderedStepsEditor({
                   type="text"
                   value={step.expectedResult || ""}
                   onChange={(e) => updateStep(idx, "expectedResult", e.target.value)}
-                  placeholder="Optional step expected outcome (e.g. Payment modal displays with order total)"
-                  className="w-full px-3 py-1.5 bg-slate-900/60 border border-slate-800/80 rounded text-xs text-slate-300 placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  placeholder="Optional expected outcome for this step"
+                  className="w-full px-2.5 py-1.5 bg-zinc-900/60 border border-zinc-800 rounded-md text-xs text-zinc-300 placeholder:text-zinc-600 focus:outline-none focus:border-zinc-500 transition"
                 />
               </div>
             </div>

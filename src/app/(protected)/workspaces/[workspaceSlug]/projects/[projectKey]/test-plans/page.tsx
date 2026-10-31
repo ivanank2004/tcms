@@ -10,15 +10,10 @@ import { CreateTestPlanModal } from "@/components/create-test-plan-modal";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import {
-  Calendar,
-  Layers,
   Search,
-  CheckCircle2,
   CheckSquare,
-  Clock,
   PlayCircle,
   FileCheck2,
-  Tag,
   ArrowRight,
   FolderGit2,
 } from "lucide-react";
@@ -29,19 +24,19 @@ const PLAN_STATUS_CONFIG: Record<
 > = {
   draft: {
     label: "Draft",
-    badgeClass: "bg-slate-800 text-slate-300 border-slate-700",
+    badgeClass: "bg-zinc-900 text-zinc-400 border-zinc-800",
   },
   active: {
     label: "Active",
-    badgeClass: "bg-sky-500/20 text-sky-300 border-sky-500/30",
+    badgeClass: "bg-sky-950/40 text-sky-300 border-sky-800/50",
   },
   completed: {
     label: "Completed",
-    badgeClass: "bg-emerald-500/20 text-emerald-300 border-emerald-500/30",
+    badgeClass: "bg-emerald-950/40 text-emerald-300 border-emerald-800/50",
   },
   archived: {
     label: "Archived",
-    badgeClass: "bg-amber-500/20 text-amber-300 border-amber-500/30",
+    badgeClass: "bg-amber-950/40 text-amber-300 border-amber-800/50",
   },
 };
 
@@ -90,7 +85,7 @@ export default async function TestPlansPage({
   }));
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <Breadcrumbs
         items={[
           { label: workspace.name, href: `/workspaces/${workspace.slug}` },
@@ -100,14 +95,14 @@ export default async function TestPlansPage({
       />
 
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-zinc-800/80">
         <div>
-          <h1 className="text-2xl font-bold text-white tracking-tight flex items-center gap-2.5">
-            <FolderGit2 className="w-6 h-6 text-indigo-400" />
+          <h1 className="text-xl font-semibold text-zinc-100 tracking-tight flex items-center gap-2">
+            <FolderGit2 className="w-5 h-5 text-zinc-400" />
             <span>Test Plans</span>
           </h1>
-          <p className="text-sm text-slate-400 mt-1">
-            Define target release scopes, testing objectives, and select reusable test cases for execution.
+          <p className="text-xs text-zinc-400 mt-0.5">
+            Define target release scopes, test objectives, and select test cases.
           </p>
         </div>
 
@@ -122,22 +117,22 @@ export default async function TestPlansPage({
       </div>
 
       {/* Filter Bar */}
-      <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <form className="flex items-center gap-3 flex-1">
+      <div className="bg-zinc-900/40 border border-zinc-800/80 rounded-xl p-3 flex flex-col md:flex-row md:items-center justify-between gap-3">
+        <form className="flex items-center gap-2 flex-1">
           <div className="relative flex-1 max-w-md">
-            <Search className="w-4 h-4 text-slate-500 absolute left-3 top-2.5" />
+            <Search className="w-3.5 h-3.5 text-zinc-500 absolute left-2.5 top-2.5 pointer-events-none" />
             <input
               type="search"
               name="search"
               defaultValue={search}
-              placeholder="Search plans by name or release tag..."
-              className="w-full pl-9 pr-3.5 py-1.5 bg-slate-950 border border-slate-800 rounded-lg text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              placeholder="Search plans by name or release..."
+              className="w-full pl-8 pr-3 py-1.5 bg-zinc-950 border border-zinc-800 rounded-lg text-xs text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:border-zinc-500"
             />
           </div>
 
           <button
             type="submit"
-            className="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-lg border border-slate-700 transition"
+            className="px-3 py-1.5 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 text-xs font-medium rounded-lg border border-zinc-800 transition"
           >
             Search
           </button>
@@ -146,10 +141,10 @@ export default async function TestPlansPage({
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0">
           <Link
             href={`/workspaces/${workspace.slug}/projects/${project.key}/test-plans`}
-            className={`px-3 py-1 rounded-lg text-xs transition ${
+            className={`px-2.5 py-1 rounded-md text-xs transition ${
               !status
-                ? "bg-indigo-600 text-white font-medium"
-                : "bg-slate-950 text-slate-400 hover:text-slate-200 border border-slate-800"
+                ? "bg-zinc-100 text-zinc-950 font-medium"
+                : "bg-zinc-950 text-zinc-400 hover:text-zinc-200 border border-zinc-800"
             }`}
           >
             All Plans
@@ -158,10 +153,10 @@ export default async function TestPlansPage({
             <Link
               key={st}
               href={`/workspaces/${workspace.slug}/projects/${project.key}/test-plans?status=${st}`}
-              className={`px-3 py-1 rounded-lg text-xs capitalize transition ${
+              className={`px-2.5 py-1 rounded-md text-xs capitalize transition ${
                 status === st
-                  ? "bg-indigo-600 text-white font-medium"
-                  : "bg-slate-950 text-slate-400 hover:text-slate-200 border border-slate-800"
+                  ? "bg-zinc-100 text-zinc-950 font-medium"
+                  : "bg-zinc-950 text-zinc-400 hover:text-zinc-200 border border-zinc-800"
               }`}
             >
               {st}
@@ -172,13 +167,13 @@ export default async function TestPlansPage({
 
       {/* Plans List */}
       {plansData.items.length === 0 ? (
-        <div className="border border-dashed border-slate-800 rounded-2xl p-12 text-center bg-slate-900/30">
-          <div className="w-12 h-12 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center mx-auto mb-4 border border-indigo-500/20">
-            <FileCheck2 className="w-6 h-6" />
+        <div className="border border-dashed border-zinc-800 rounded-xl p-10 text-center bg-zinc-900/20">
+          <div className="w-10 h-10 rounded-lg bg-zinc-900 text-zinc-400 flex items-center justify-center mx-auto mb-3 border border-zinc-800">
+            <FileCheck2 className="w-5 h-5" />
           </div>
-          <h3 className="text-base font-semibold text-white">No test plans found</h3>
-          <p className="text-sm text-slate-400 max-w-sm mx-auto mt-1 mb-6">
-            Create a test plan to organize your test cases into scoped releases and trigger execution runs.
+          <h3 className="text-sm font-semibold text-zinc-200">No test plans found</h3>
+          <p className="text-xs text-zinc-500 max-w-sm mx-auto mt-1 mb-5">
+            Create a test plan to organize test cases into scoped releases and execute runs.
           </p>
           {canMutate && (
             <CreateTestPlanModal
@@ -190,72 +185,72 @@ export default async function TestPlansPage({
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
           {plansData.items.map((plan) => {
             const statusConfig = PLAN_STATUS_CONFIG[plan.status as TestPlanStatus] || PLAN_STATUS_CONFIG.draft;
 
             return (
               <div
                 key={plan.id}
-                className="bg-slate-900 border border-slate-800 rounded-xl p-5 hover:border-slate-700 transition flex flex-col justify-between"
+                className="bg-zinc-900/40 border border-zinc-800/80 hover:border-zinc-700/80 hover:bg-zinc-900/70 rounded-xl p-4 transition flex flex-col justify-between group"
               >
-                <div className="space-y-3">
+                <div className="space-y-2.5">
                   <div className="flex items-start justify-between gap-3">
                     <div className="space-y-1">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span
-                          className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border capitalize ${statusConfig.badgeClass}`}
+                          className={`text-[10px] font-medium px-2 py-0.5 rounded-md border capitalize ${statusConfig.badgeClass}`}
                         >
                           {statusConfig.label}
                         </span>
                         {plan.targetRelease && (
-                          <span className="font-mono text-[10px] px-2 py-0.5 rounded bg-indigo-500/15 text-indigo-300 border border-indigo-500/30">
+                          <span className="font-mono text-[10px] px-1.5 py-0.2 rounded-md bg-zinc-800 text-zinc-300 border border-zinc-700/60 font-medium">
                             {plan.targetRelease}
                           </span>
                         )}
                         {plan.environment && (
-                          <span className="text-[10px] text-slate-400 bg-slate-950 px-2 py-0.5 rounded border border-slate-800">
+                          <span className="text-[10px] text-zinc-400 bg-zinc-950 px-1.5 py-0.2 rounded-md border border-zinc-800">
                             {plan.environment}
                           </span>
                         )}
                       </div>
-                      <h3 className="text-base font-semibold text-white tracking-tight">
+                      <h3 className="text-sm font-medium text-zinc-100 group-hover:text-white tracking-tight">
                         {plan.name}
                       </h3>
                     </div>
                   </div>
 
                   {plan.description && (
-                    <p className="text-xs text-slate-400 line-clamp-2">{plan.description}</p>
+                    <p className="text-xs text-zinc-400 line-clamp-2">{plan.description}</p>
                   )}
 
-                  <div className="flex items-center gap-4 text-xs text-slate-400 pt-2 border-t border-slate-800/80">
-                    <span className="flex items-center gap-1.5 font-medium text-slate-300">
-                      <CheckSquare className="w-3.5 h-3.5 text-indigo-400" />
+                  <div className="flex items-center gap-3 text-xs text-zinc-400 pt-2 border-t border-zinc-800/80">
+                    <span className="flex items-center gap-1.5 text-zinc-300">
+                      <CheckSquare className="w-3.5 h-3.5 text-zinc-400" />
                       {plan.casesCount} {plan.casesCount === 1 ? "case" : "cases"}
                     </span>
-                    <span>•</span>
-                    <span className="flex items-center gap-1.5 font-medium text-slate-300">
-                      <PlayCircle className="w-3.5 h-3.5 text-sky-400" />
+                    <span className="text-zinc-700">•</span>
+                    <span className="flex items-center gap-1.5 text-zinc-300">
+                      <PlayCircle className="w-3.5 h-3.5 text-zinc-400" />
                       {plan.runsCount} {plan.runsCount === 1 ? "run" : "runs"}
                     </span>
-                    <span>•</span>
-                    <span className="text-slate-500 truncate">
+                    <span className="text-zinc-700">•</span>
+                    <span className="text-zinc-500 truncate text-[11px]">
                       Owner: {plan.ownerName || "Unassigned"}
                     </span>
                   </div>
                 </div>
 
-                <div className="pt-4 mt-4 border-t border-slate-800/60 flex items-center justify-between">
-                  <span className="text-[11px] text-slate-500 font-mono">
+                <div className="pt-3 mt-3 border-t border-zinc-800/80 flex items-center justify-between">
+                  <span className="text-[11px] text-zinc-500 font-mono">
                     Created {new Date(plan.createdAt).toLocaleDateString()}
                   </span>
 
                   <Link
                     href={`/workspaces/${workspace.slug}/projects/${project.key}/test-plans/${plan.id}`}
-                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-400 hover:text-indigo-300 transition"
+                    className="inline-flex items-center gap-1 text-xs font-medium text-zinc-300 group-hover:text-white transition"
                   >
-                    <span>View Plan Scope</span>
+                    <span>View Plan</span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </Link>
                 </div>

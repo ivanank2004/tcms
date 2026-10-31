@@ -10,38 +10,38 @@ export const EXECUTION_STATUS_CONFIG: Record<
 > = {
   not_run: {
     label: "Not Run",
-    badgeClass: "bg-slate-800 text-slate-300 border-slate-700",
-    bgClass: "bg-slate-800",
-    textClass: "text-slate-300",
-    borderClass: "border-slate-700",
+    badgeClass: "bg-zinc-900 text-zinc-400 border-zinc-800",
+    bgClass: "bg-zinc-800",
+    textClass: "text-zinc-400",
+    borderClass: "border-zinc-800",
   },
   passed: {
     label: "Passed",
-    badgeClass: "bg-emerald-500/20 text-emerald-300 border-emerald-500/30",
+    badgeClass: "bg-emerald-950/40 text-emerald-300 border-emerald-800/50",
     bgClass: "bg-emerald-500",
     textClass: "text-emerald-400",
-    borderClass: "border-emerald-500/30",
+    borderClass: "border-emerald-800/50",
   },
   failed: {
     label: "Failed",
-    badgeClass: "bg-rose-500/20 text-rose-300 border-rose-500/30",
+    badgeClass: "bg-rose-950/40 text-rose-300 border-rose-800/50",
     bgClass: "bg-rose-500",
     textClass: "text-rose-400",
-    borderClass: "border-rose-500/30",
+    borderClass: "border-rose-800/50",
   },
   blocked: {
     label: "Blocked",
-    badgeClass: "bg-amber-500/20 text-amber-300 border-amber-500/30",
+    badgeClass: "bg-amber-950/40 text-amber-300 border-amber-800/50",
     bgClass: "bg-amber-500",
     textClass: "text-amber-400",
-    borderClass: "border-amber-500/30",
+    borderClass: "border-amber-800/50",
   },
   skipped: {
     label: "Skipped",
-    badgeClass: "bg-indigo-500/20 text-indigo-300 border-indigo-500/30",
-    bgClass: "bg-indigo-500",
-    textClass: "text-indigo-400",
-    borderClass: "border-indigo-500/30",
+    badgeClass: "bg-zinc-800/80 text-zinc-300 border-zinc-700/60",
+    bgClass: "bg-zinc-500",
+    textClass: "text-zinc-300",
+    borderClass: "border-zinc-700/60",
   },
 };
 
@@ -51,19 +51,19 @@ export const RUN_STATUS_CONFIG: Record<
 > = {
   not_started: {
     label: "Not Started",
-    badgeClass: "bg-slate-800 text-slate-300 border-slate-700",
+    badgeClass: "bg-zinc-900 text-zinc-400 border-zinc-800",
   },
   in_progress: {
     label: "In Progress",
-    badgeClass: "bg-sky-500/20 text-sky-300 border-sky-500/30",
+    badgeClass: "bg-sky-950/40 text-sky-300 border-sky-800/50",
   },
   completed: {
     label: "Completed",
-    badgeClass: "bg-emerald-500/20 text-emerald-300 border-emerald-500/30",
+    badgeClass: "bg-emerald-950/40 text-emerald-300 border-emerald-800/50",
   },
   aborted: {
     label: "Aborted",
-    badgeClass: "bg-rose-500/20 text-rose-300 border-rose-500/30",
+    badgeClass: "bg-rose-950/40 text-rose-300 border-rose-800/50",
   },
 };
 

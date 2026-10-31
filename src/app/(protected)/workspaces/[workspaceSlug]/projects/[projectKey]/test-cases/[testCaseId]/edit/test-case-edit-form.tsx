@@ -117,34 +117,34 @@ export function TestCaseEditForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 max-w-4xl">
+    <form onSubmit={handleSubmit} className="space-y-5 max-w-4xl">
       {errorMsg && (
-        <div className="p-3 bg-red-950/60 border border-red-800/80 rounded-lg text-sm text-red-300 flex items-start gap-2.5">
-          <AlertCircle className="w-4 h-4 mt-0.5 shrink-0 text-red-400" />
+        <div className="p-2.5 bg-rose-950/40 border border-rose-800/60 rounded-lg text-xs text-rose-300 flex items-start gap-2">
+          <AlertCircle className="w-4 h-4 mt-0.5 shrink-0 text-rose-400" />
           <span>{errorMsg}</span>
         </div>
       )}
 
       {/* Revision Notice */}
-      <div className="p-4 bg-indigo-950/30 border border-indigo-800/40 rounded-xl flex items-center justify-between text-xs text-indigo-300">
+      <div className="p-3 bg-zinc-900 border border-zinc-800 rounded-lg flex items-center justify-between text-xs text-zinc-300">
         <div className="flex items-center gap-2">
-          <GitCommit className="w-4 h-4 text-indigo-400" />
+          <GitCommit className="w-4 h-4 text-zinc-400" />
           <span>
-            Editing <strong className="font-mono text-white">{testCase.stableId}</strong> (Current
-            revision: <strong>v{testCase.revision}</strong>)
+            Editing <strong className="font-mono text-zinc-100">{testCase.stableId}</strong> (Current:{" "}
+            <strong>v{testCase.revision}</strong>)
           </span>
         </div>
-        <span className="text-slate-400">
-          Substantive changes will automatically increment revision number.
+        <span className="text-zinc-500 text-[11px] hidden sm:inline">
+          Substantive edits generate a new revision.
         </span>
       </div>
 
       {/* Basic Information */}
-      <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-4">
-        <h3 className="text-sm font-semibold text-white">General Information</h3>
+      <div className="bg-zinc-900/40 border border-zinc-800/80 rounded-xl p-5 space-y-4">
+        <h3 className="text-xs font-medium text-zinc-300 uppercase tracking-wider">General Information</h3>
 
         <div>
-          <label className="block text-xs font-medium text-slate-300 mb-1.5" htmlFor="title">
+          <label className="block text-xs font-medium text-zinc-300 mb-1" htmlFor="title">
             Title *
           </label>
           <input
@@ -152,13 +152,13 @@ export function TestCaseEditForm({
             required
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="e.g. Verify user can check out with valid credit card"
-            className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-lg text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            placeholder="e.g. Verify JWT session token renewal on refresh endpoint"
+            className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-lg text-xs text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:border-zinc-500 transition"
           />
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-slate-300 mb-1.5" htmlFor="description">
+          <label className="block text-xs font-medium text-zinc-300 mb-1" htmlFor="description">
             Description
           </label>
           <textarea
@@ -167,20 +167,20 @@ export function TestCaseEditForm({
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Additional context or notes..."
-            className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-lg text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-lg text-xs text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:border-zinc-500 transition"
           />
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div>
-            <label className="block text-xs font-medium text-slate-300 mb-1.5" htmlFor="module">
+            <label className="block text-xs font-medium text-zinc-300 mb-1" htmlFor="module">
               Module
             </label>
             <select
               id="module"
               value={moduleId}
               onChange={(e) => setModuleId(e.target.value)}
-              className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              className="w-full px-2.5 py-1.5 bg-zinc-950 border border-zinc-800 rounded-lg text-xs text-zinc-200 focus:outline-none focus:border-zinc-500 transition"
             >
               <option value="">None (Unassigned)</option>
               {modules.map((m) => (
@@ -192,14 +192,14 @@ export function TestCaseEditForm({
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-slate-300 mb-1.5" htmlFor="priority">
+            <label className="block text-xs font-medium text-zinc-300 mb-1" htmlFor="priority">
               Priority
             </label>
             <select
               id="priority"
               value={priority}
               onChange={(e) => setPriority(e.target.value as Priority)}
-              className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500 capitalize"
+              className="w-full px-2.5 py-1.5 bg-zinc-950 border border-zinc-800 rounded-lg text-xs text-zinc-200 focus:outline-none focus:border-zinc-500 capitalize transition"
             >
               {PRIORITIES.map((p) => (
                 <option key={p} value={p}>
@@ -210,14 +210,14 @@ export function TestCaseEditForm({
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-slate-300 mb-1.5" htmlFor="lifecycle">
+            <label className="block text-xs font-medium text-zinc-300 mb-1" htmlFor="lifecycle">
               Lifecycle Readiness
             </label>
             <select
               id="lifecycle"
               value={lifecycle}
               onChange={(e) => setLifecycle(e.target.value as Lifecycle)}
-              className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500 capitalize"
+              className="w-full px-2.5 py-1.5 bg-zinc-950 border border-zinc-800 rounded-lg text-xs text-zinc-200 focus:outline-none focus:border-zinc-500 capitalize transition"
             >
               {LIFECYCLES.map((lc) => (
                 <option key={lc} value={lc}>
@@ -229,10 +229,10 @@ export function TestCaseEditForm({
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-slate-300 mb-1.5">
+          <label className="block text-xs font-medium text-zinc-300 mb-1.5">
             Test Type Taxonomy (Multi-label)
           </label>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-1.5">
             {TEST_TYPE_TAXONOMY.map((t) => {
               const selected = selectedTypes.includes(t);
               return (
@@ -240,10 +240,10 @@ export function TestCaseEditForm({
                   type="button"
                   key={t}
                   onClick={() => toggleType(t)}
-                  className={`text-xs px-2.5 py-1 rounded-md border transition ${
+                  className={`text-[11px] px-2.5 py-1 rounded-md border transition ${
                     selected
-                      ? "bg-indigo-600/30 border-indigo-500 text-indigo-300 font-medium"
-                      : "bg-slate-950 border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700"
+                      ? "bg-zinc-800 border-zinc-600 text-zinc-100 font-medium"
+                      : "bg-zinc-950 border-zinc-800 text-zinc-400 hover:text-zinc-200 hover:border-zinc-700"
                   }`}
                 >
                   {t}
@@ -254,25 +254,25 @@ export function TestCaseEditForm({
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-slate-300 mb-1.5" htmlFor="tags">
+          <label className="block text-xs font-medium text-zinc-300 mb-1" htmlFor="tags">
             Tags
           </label>
           <input
             id="tags"
             value={tagsInput}
             onChange={(e) => setTagsInput(e.target.value)}
-            placeholder="e.g. smoke, regression, checkout, v1.2 (comma-separated)"
-            className="w-full px-3.5 py-2 bg-slate-950 border border-slate-800 rounded-lg text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            placeholder="e.g. smoke, regression, auth, p1, v2.4 (comma-separated)"
+            className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-lg text-xs text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:border-zinc-500 transition"
           />
         </div>
       </div>
 
       {/* Preconditions & Steps */}
-      <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-4">
-        <h3 className="text-sm font-semibold text-white">Execution Definition</h3>
+      <div className="bg-zinc-900/40 border border-zinc-800/80 rounded-xl p-5 space-y-4">
+        <h3 className="text-xs font-medium text-zinc-300 uppercase tracking-wider">Execution Definition</h3>
 
         <div>
-          <label className="block text-xs font-medium text-slate-300 mb-1.5" htmlFor="preconditions">
+          <label className="block text-xs font-medium text-zinc-300 mb-1" htmlFor="preconditions">
             Preconditions
           </label>
           <textarea
@@ -281,7 +281,7 @@ export function TestCaseEditForm({
             value={preconditions}
             onChange={(e) => setPreconditions(e.target.value)}
             placeholder="e.g. User is logged in as registered buyer with items in cart"
-            className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-lg text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-lg text-xs text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:border-zinc-500 transition"
           />
         </div>
 
@@ -289,7 +289,7 @@ export function TestCaseEditForm({
         <OrderedStepsEditor steps={steps} onChange={setSteps} />
 
         <div>
-          <label className="block text-xs font-medium text-slate-300 mb-1.5" htmlFor="expectedResult">
+          <label className="block text-xs font-medium text-zinc-300 mb-1" htmlFor="expectedResult">
             Overall Expected Result {lifecycle === "ready" && "*"}
           </label>
           <textarea
@@ -298,12 +298,12 @@ export function TestCaseEditForm({
             value={expectedResult}
             onChange={(e) => setExpectedResult(e.target.value)}
             placeholder="e.g. Order is placed, confirmation email received, order appears in history"
-            className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-lg text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-lg text-xs text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:border-zinc-500 transition"
           />
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-slate-300 mb-1.5" htmlFor="changeSummary">
+          <label className="block text-xs font-medium text-zinc-300 mb-1" htmlFor="changeSummary">
             Revision Change Summary (Optional)
           </label>
           <input
@@ -311,7 +311,7 @@ export function TestCaseEditForm({
             value={changeSummary}
             onChange={(e) => setChangeSummary(e.target.value)}
             placeholder="e.g. Updated step 2 to reflect new OAuth consent screen"
-            className="w-full px-3.5 py-2 bg-slate-950 border border-slate-800 rounded-lg text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-lg text-xs text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:border-zinc-500 transition"
           />
         </div>
       </div>
@@ -320,7 +320,7 @@ export function TestCaseEditForm({
       <div className="flex items-center justify-between pt-2">
         <Link
           href={`/workspaces/${workspaceSlug}/projects/${projectKey}/test-cases/${testCase.id}`}
-          className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-slate-200 transition"
+          className="inline-flex items-center gap-1 text-xs text-zinc-400 hover:text-zinc-200 transition"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
           <span>Cancel & Return</span>
@@ -329,10 +329,10 @@ export function TestCaseEditForm({
         <button
           type="submit"
           disabled={isPending}
-          className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-800/60 disabled:cursor-not-allowed text-white text-xs font-semibold rounded-lg shadow transition flex items-center gap-2"
+          className="px-4 py-2 bg-zinc-100 hover:bg-zinc-200 disabled:bg-zinc-800 disabled:text-zinc-500 disabled:cursor-not-allowed text-zinc-950 text-xs font-medium rounded-lg transition flex items-center gap-2"
         >
           {isPending ? (
-            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            <div className="w-3.5 h-3.5 border-2 border-zinc-950/30 border-t-zinc-950 rounded-full animate-spin" />
           ) : (
             <span>Save Changes</span>
           )}

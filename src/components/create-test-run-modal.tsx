@@ -45,7 +45,7 @@ export function CreateTestRunModal({
         environment,
         buildVersion: buildVersion || undefined,
         notes: notes || undefined,
-        testCaseIds: [], // If testPlanId is provided, server action snapshots all cases in plan!
+        testCaseIds: [],
       });
 
       if (res.error) {
@@ -67,43 +67,43 @@ export function CreateTestRunModal({
         onClick={() => setIsOpen(true)}
         className={
           buttonVariant === "primary"
-            ? "inline-flex items-center gap-1.5 px-3.5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-lg shadow-sm transition"
-            : "inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-lg border border-slate-700 transition"
+            ? "inline-flex items-center gap-1.5 px-3 py-1.5 bg-zinc-100 hover:bg-zinc-200 text-zinc-950 text-xs font-medium rounded-lg transition"
+            : "inline-flex items-center gap-1.5 px-3 py-1.5 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 text-xs font-medium rounded-lg border border-zinc-800 transition"
         }
       >
-        <PlayCircle className="w-4 h-4 text-sky-400" />
+        <PlayCircle className="w-3.5 h-3.5 text-zinc-400" />
         <span>{buttonLabel}</span>
       </button>
 
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs">
-          <div className="bg-slate-900 border border-slate-800 rounded-xl shadow-2xl w-full max-w-lg p-6 relative">
-            <div className="flex items-center justify-between pb-4 border-b border-slate-800 mb-4">
+          <div className="bg-zinc-900 border border-zinc-800 rounded-xl shadow-2xl w-full max-w-lg p-5 relative">
+            <div className="flex items-center justify-between pb-3.5 border-b border-zinc-800 mb-4">
               <div>
-                <h3 className="font-semibold text-white text-sm">Instantiate Test Run</h3>
-                <p className="text-xs text-slate-400">
-                  The current revision of all test cases in the selected plan will be snapshotted immutably into this run.
+                <h3 className="font-semibold text-zinc-100 text-sm">Instantiate Test Run</h3>
+                <p className="text-[11px] text-zinc-500">
+                  Active revisions in the selected plan will be snapshotted immutably into this run.
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() => setIsOpen(false)}
-                className="text-slate-400 hover:text-slate-200 transition"
+                className="text-zinc-400 hover:text-zinc-200 p-1 rounded-md hover:bg-zinc-800 transition"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4" />
               </button>
             </div>
 
             {errorMsg && (
-              <div className="p-3 bg-red-950/60 border border-red-800/80 rounded-lg text-xs text-red-300 flex items-start gap-2 mb-4">
-                <AlertCircle className="w-4 h-4 mt-0.5 shrink-0 text-red-400" />
+              <div className="p-2.5 bg-rose-950/40 border border-rose-800/60 rounded-lg text-xs text-rose-300 flex items-start gap-2 mb-3">
+                <AlertCircle className="w-4 h-4 mt-0.5 shrink-0 text-rose-400" />
                 <span>{errorMsg}</span>
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-3.5">
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1" htmlFor="planSelect">
+                <label className="block text-xs font-medium text-zinc-300 mb-1" htmlFor="planSelect">
                   Source Test Plan *
                 </label>
                 <select
@@ -111,7 +111,7 @@ export function CreateTestRunModal({
                   required
                   value={testPlanId}
                   onChange={(e) => setTestPlanId(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-xs text-slate-100 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  className="w-full px-2.5 py-1.5 bg-zinc-950 border border-zinc-800 rounded-lg text-xs text-zinc-100 focus:outline-none focus:border-zinc-500 transition"
                 >
                   {plans.length === 0 ? (
                     <option value="">No test plans available</option>
@@ -126,7 +126,7 @@ export function CreateTestRunModal({
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1" htmlFor="runName">
+                <label className="block text-xs font-medium text-zinc-300 mb-1" htmlFor="runName">
                   Test Run Name *
                 </label>
                 <input
@@ -135,13 +135,13 @@ export function CreateTestRunModal({
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="e.g. Sprint 24 Regression - Staging Run #1"
-                  className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-lg text-xs text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:border-zinc-500 transition"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-2.5">
                 <div>
-                  <label className="block text-xs font-medium text-slate-300 mb-1" htmlFor="environment">
+                  <label className="block text-xs font-medium text-zinc-300 mb-1" htmlFor="environment">
                     Environment *
                   </label>
                   <select
@@ -149,7 +149,7 @@ export function CreateTestRunModal({
                     required
                     value={environment}
                     onChange={(e) => setEnvironment(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-xs text-slate-100 focus:outline-none focus:ring-1 focus:ring-indigo-500 capitalize"
+                    className="w-full px-2.5 py-1.5 bg-zinc-950 border border-zinc-800 rounded-lg text-xs text-zinc-100 focus:outline-none focus:border-zinc-500 capitalize transition"
                   >
                     <option value="staging">Staging</option>
                     <option value="production">Production</option>
@@ -159,7 +159,7 @@ export function CreateTestRunModal({
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-slate-300 mb-1" htmlFor="buildVersion">
+                  <label className="block text-xs font-medium text-zinc-300 mb-1" htmlFor="buildVersion">
                     Build Version
                   </label>
                   <input
@@ -167,13 +167,13 @@ export function CreateTestRunModal({
                     value={buildVersion}
                     onChange={(e) => setBuildVersion(e.target.value)}
                     placeholder="e.g. bld-20241031.1"
-                    className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-lg text-xs text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:border-zinc-500 transition"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1" htmlFor="notes">
+                <label className="block text-xs font-medium text-zinc-300 mb-1" htmlFor="notes">
                   Session Notes
                 </label>
                 <textarea
@@ -181,30 +181,30 @@ export function CreateTestRunModal({
                   rows={2}
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  placeholder="Special instructions, test dataset details, or configuration notes..."
-                  className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  placeholder="Special instructions or dataset configuration notes..."
+                  className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-lg text-xs text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:border-zinc-500 transition"
                 />
               </div>
 
-              <div className="p-3 rounded-lg bg-indigo-950/30 border border-indigo-800/40 text-[11px] text-indigo-300">
-                <strong>Snapshot Invariant:</strong> Creating this run locks in the current revision of all test cases in the plan. Later changes to the repository will not alter this execution session.
+              <div className="p-2.5 rounded-lg bg-zinc-950 border border-zinc-800 text-[11px] text-zinc-400">
+                <span className="text-zinc-200 font-medium">Snapshot Invariant:</span> Locks active revisions of cases. Later edits will not affect this run.
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-800">
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-zinc-800">
                 <button
                   type="button"
                   onClick={() => setIsOpen(false)}
-                  className="px-4 py-2 text-xs font-medium text-slate-400 hover:text-slate-200 transition"
+                  className="px-3 py-1.5 text-xs font-medium text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 rounded-lg transition"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isPending || !name.trim() || !testPlanId}
-                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-800/60 disabled:cursor-not-allowed text-white text-xs font-semibold rounded-lg shadow transition flex items-center gap-2"
+                  className="px-3.5 py-1.5 bg-zinc-100 hover:bg-zinc-200 disabled:bg-zinc-800 disabled:text-zinc-500 disabled:cursor-not-allowed text-zinc-950 text-xs font-medium rounded-lg transition flex items-center gap-2"
                 >
                   {isPending ? (
-                    <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <div className="w-3.5 h-3.5 border-2 border-zinc-950/30 border-t-zinc-950 rounded-full animate-spin" />
                   ) : (
                     <span>Instantiate Run</span>
                   )}

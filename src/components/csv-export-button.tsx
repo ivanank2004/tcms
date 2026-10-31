@@ -37,9 +37,9 @@ export function CSVExportButton({
     <button
       onClick={handleExport}
       disabled={isExporting}
-      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium rounded-lg border border-slate-700 transition"
+      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 text-xs font-medium rounded-lg border border-zinc-800 transition"
     >
-      <Download className="w-3.5 h-3.5" />
+      <Download className="w-3.5 h-3.5 text-zinc-400" />
       <span>{isExporting ? "Exporting..." : "Export CSV"}</span>
     </button>
   );

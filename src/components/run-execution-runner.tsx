@@ -21,15 +21,11 @@ import {
   XCircle,
   AlertCircle,
   HelpCircle,
-  Clock,
   Play,
   Check,
-  RotateCcw,
   User,
   GitBranch,
   Search,
-  Filter,
-  CheckSquare,
   AlertTriangle,
   History,
   Send,
@@ -42,7 +38,7 @@ export interface RunCaseWithAttempts {
   snapshotTitle: string;
   snapshotDescription: string | null;
   snapshotPreconditions: string | null;
-  snapshotSteps: any; // StepSnapshot[]
+  snapshotSteps: any;
   snapshotExpectedResult: string | null;
   snapshotPriority: string;
   snapshotModuleName: string | null;
@@ -189,26 +185,26 @@ export function RunExecutionRunner({
   const runStatusConfig = RUN_STATUS_CONFIG[run.status as TestRunStatus] || RUN_STATUS_CONFIG.not_started;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       {/* Top Session Progress Bar Card */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 sm:p-6 space-y-4">
+      <div className="bg-zinc-900/40 border border-zinc-800/80 rounded-xl p-5 space-y-3.5">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-1">
-            <div className="flex items-center gap-2.5 flex-wrap">
-              <span className={`text-[10px] font-semibold px-2.5 py-0.5 rounded-full border ${runStatusConfig.badgeClass}`}>
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className={`text-[10px] font-medium px-2 py-0.5 rounded-md border capitalize ${runStatusConfig.badgeClass}`}>
                 {runStatusConfig.label}
               </span>
-              <span className="font-mono text-xs uppercase px-2 py-0.5 rounded bg-slate-950 border border-slate-800 text-slate-300">
+              <span className="font-mono text-[10px] uppercase px-1.5 py-0.2 rounded-md bg-zinc-950 border border-zinc-800 text-zinc-400">
                 Env: {run.environment}
               </span>
               {run.buildVersion && (
-                <span className="font-mono text-xs px-2 py-0.5 rounded bg-indigo-500/15 border border-indigo-500/30 text-indigo-300">
+                <span className="font-mono text-[10px] px-1.5 py-0.2 rounded-md bg-zinc-800 border border-zinc-700/60 text-zinc-300">
                   Build: {run.buildVersion}
                 </span>
               )}
             </div>
-            <h1 className="text-xl font-bold text-white tracking-tight">{run.name}</h1>
-            {run.notes && <p className="text-xs text-slate-400">{run.notes}</p>}
+            <h1 className="text-xl font-semibold text-zinc-100 tracking-tight">{run.name}</h1>
+            {run.notes && <p className="text-xs text-zinc-400">{run.notes}</p>}
           </div>
 
           {canMutate && !isCompleted && (
@@ -217,7 +213,7 @@ export function RunExecutionRunner({
                 type="button"
                 onClick={() => handleUpdateRunStatus("completed")}
                 disabled={isPending}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-lg shadow-sm transition"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-zinc-100 hover:bg-zinc-200 text-zinc-950 text-xs font-medium rounded-lg transition"
               >
                 <Check className="w-3.5 h-3.5" />
                 <span>Complete Run</span>
@@ -226,7 +222,7 @@ export function RunExecutionRunner({
                 type="button"
                 onClick={() => handleUpdateRunStatus("aborted")}
                 disabled={isPending}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-rose-300 text-xs font-medium rounded-lg border border-slate-700 transition"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-rose-400 text-xs font-medium rounded-lg border border-zinc-800 transition"
               >
                 <span>Abort</span>
               </button>
@@ -235,33 +231,33 @@ export function RunExecutionRunner({
         </div>
 
         {/* Progress Breakdown */}
-        <div className="space-y-2 pt-2">
+        <div className="space-y-1.5 pt-1">
           <div className="flex items-center justify-between text-xs">
-            <div className="flex items-center gap-3">
-              <span className="text-slate-300 font-semibold">
-                Progress: <strong className="text-white font-mono">{run.stats.progressPercent}%</strong>
+            <div className="flex items-center gap-2.5">
+              <span className="text-zinc-300">
+                Progress: <strong className="text-zinc-100 font-mono">{run.stats.progressPercent}%</strong>
               </span>
-              <span className="text-slate-500">•</span>
-              <span className="text-slate-400">
-                Evaluated: <strong>{run.stats.evaluated}</strong> / {run.stats.totalCases} cases
+              <span className="text-zinc-700">•</span>
+              <span className="text-zinc-400">
+                Evaluated: <strong>{run.stats.evaluated}</strong>/{run.stats.totalCases} cases
               </span>
-              <span className="text-slate-500">•</span>
+              <span className="text-zinc-700">•</span>
               <span className="text-emerald-400 font-medium">
                 Pass Rate: <strong>{run.stats.passRate}%</strong>
               </span>
             </div>
 
-            <div className="flex items-center gap-3 font-mono text-[11px] hidden sm:flex">
-              <span className="text-emerald-400">Passed: {run.stats.passed}</span>
-              <span className="text-rose-400">Failed: {run.stats.failed}</span>
-              <span className="text-amber-400">Blocked: {run.stats.blocked}</span>
-              <span className="text-indigo-400">Skipped: {run.stats.skipped}</span>
-              <span className="text-slate-500">Not Run: {run.stats.notRun}</span>
+            <div className="flex items-center gap-2.5 font-mono text-[11px] hidden sm:flex">
+              <span className="text-emerald-400">{run.stats.passed} Passed</span>
+              <span className="text-rose-400">{run.stats.failed} Failed</span>
+              <span className="text-amber-400">{run.stats.blocked} Blocked</span>
+              <span className="text-zinc-400">{run.stats.skipped} Skipped</span>
+              <span className="text-zinc-500">{run.stats.notRun} Not Run</span>
             </div>
           </div>
 
           {/* Segmented Progress Bar */}
-          <div className="w-full h-2.5 rounded-full bg-slate-950 border border-slate-800 overflow-hidden flex">
+          <div className="w-full h-1.5 rounded-full bg-zinc-800 overflow-hidden flex">
             {run.stats.totalCases > 0 && (
               <>
                 <div
@@ -281,7 +277,7 @@ export function RunExecutionRunner({
                 />
                 <div
                   style={{ width: `${(run.stats.skipped / run.stats.totalCases) * 100}%` }}
-                  className="bg-indigo-500 transition-all duration-300"
+                  className="bg-zinc-400 transition-all duration-300"
                   title={`Skipped: ${run.stats.skipped}`}
                 />
               </>
@@ -291,18 +287,18 @@ export function RunExecutionRunner({
       </div>
 
       {/* Main Execution Runner (Split View) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
         {/* Left Pane: Test Cases Sidebar (4 cols) */}
-        <div className="lg:col-span-4 bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-3 flex flex-col h-[700px]">
+        <div className="lg:col-span-4 bg-zinc-900/40 border border-zinc-800/80 rounded-xl p-3.5 space-y-2.5 flex flex-col h-[700px]">
           {/* Quick Filter Bar */}
           <div className="space-y-2">
             <div className="relative">
-              <Search className="w-3.5 h-3.5 text-slate-500 absolute left-2.5 top-2.5" />
+              <Search className="w-3.5 h-3.5 text-zinc-500 absolute left-2.5 top-2.5 pointer-events-none" />
               <input
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search cases..."
-                className="w-full pl-8 pr-3 py-1.5 bg-slate-950 border border-slate-800 rounded-lg text-xs text-slate-200 placeholder-slate-500 focus:outline-none"
+                className="w-full pl-8 pr-3 py-1.5 bg-zinc-950 border border-zinc-800 rounded-lg text-xs text-zinc-200 placeholder:text-zinc-600 focus:outline-none focus:border-zinc-500"
               />
             </div>
 
@@ -312,10 +308,10 @@ export function RunExecutionRunner({
                   key={st}
                   type="button"
                   onClick={() => setFilterStatus(st)}
-                  className={`px-2 py-1 rounded capitalize shrink-0 transition ${
+                  className={`px-2 py-0.5 rounded capitalize shrink-0 transition ${
                     filterStatus === st
-                      ? "bg-indigo-600 text-white font-semibold"
-                      : "bg-slate-950 text-slate-400 hover:text-slate-200 border border-slate-800"
+                      ? "bg-zinc-100 text-zinc-950 font-medium"
+                      : "bg-zinc-950 text-zinc-400 hover:text-zinc-200 border border-zinc-800"
                   }`}
                 >
                   {st.replace("_", " ")}
@@ -325,9 +321,9 @@ export function RunExecutionRunner({
           </div>
 
           {/* Cases List */}
-          <div className="flex-1 overflow-y-auto space-y-1.5 pr-1">
+          <div className="flex-1 overflow-y-auto space-y-1 pr-1">
             {filteredCases.length === 0 ? (
-              <div className="text-center py-12 text-xs text-slate-500">
+              <div className="text-center py-10 text-xs text-zinc-500">
                 No cases matching filter.
               </div>
             ) : (
@@ -349,22 +345,22 @@ export function RunExecutionRunner({
                     }}
                     className={`w-full text-left p-2.5 rounded-lg border transition flex items-start justify-between gap-2 ${
                       isSelected
-                        ? "bg-indigo-950/40 border-indigo-700/80 text-white shadow-sm"
-                        : "bg-slate-950/40 border-slate-800/80 text-slate-300 hover:bg-slate-800/50"
+                        ? "bg-zinc-800/60 border-zinc-700 text-white shadow-xs"
+                        : "bg-zinc-950/40 border-zinc-800/80 text-zinc-300 hover:bg-zinc-800/30"
                     }`}
                   >
-                    <div className="space-y-1 truncate pr-2">
+                    <div className="space-y-0.5 truncate pr-2">
                       <div className="flex items-center gap-1.5">
-                        <span className="font-mono text-xs font-bold text-indigo-300">
+                        <span className="font-mono text-xs font-medium text-zinc-200">
                           {c.stableId}
                         </span>
-                        <span className="font-mono text-[10px] text-slate-500">
+                        <span className="font-mono text-[10px] text-zinc-500">
                           v{c.revisionNumber}
                         </span>
                       </div>
-                      <p className="text-xs font-medium truncate">{c.snapshotTitle}</p>
+                      <p className="text-xs truncate text-zinc-300">{c.snapshotTitle}</p>
                       {c.snapshotModuleName && (
-                        <span className="text-[10px] text-slate-400">
+                        <span className="text-[10px] text-zinc-500">
                           {c.snapshotModuleName}
                         </span>
                       )}
@@ -372,7 +368,7 @@ export function RunExecutionRunner({
 
                     <div className="shrink-0 pt-0.5">
                       <span
-                        className={`text-[9px] font-semibold px-2 py-0.5 rounded-full border ${statusCfg.badgeClass}`}
+                        className={`text-[9px] font-medium px-1.5 py-0.2 rounded-md border ${statusCfg.badgeClass}`}
                       >
                         {statusCfg.label}
                       </span>
@@ -385,32 +381,32 @@ export function RunExecutionRunner({
         </div>
 
         {/* Center / Right Pane: Case Specification & Execution Logger (8 cols) */}
-        <div className="lg:col-span-8 space-y-5">
+        <div className="lg:col-span-8 space-y-4">
           {!selectedCase ? (
-            <div className="bg-slate-900 border border-slate-800 rounded-xl p-12 text-center text-sm text-slate-400">
-              No test case selected. Select a case from the sidebar to inspect execution steps and log results.
+            <div className="bg-zinc-900/40 border border-zinc-800/80 rounded-xl p-10 text-center text-xs text-zinc-500">
+              Select a case from the sidebar to inspect execution steps and log results.
             </div>
           ) : (
             <>
               {/* Selected Case Header Card */}
-              <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-4">
-                <div className="flex items-start justify-between gap-4">
+              <div className="bg-zinc-900/40 border border-zinc-800/80 rounded-xl p-4 space-y-3">
+                <div className="flex items-start justify-between gap-3">
                   <div>
-                    <div className="flex items-center gap-2.5 flex-wrap">
-                      <span className="font-mono text-sm font-bold px-2.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-mono text-xs font-semibold px-2 py-0.5 rounded-md bg-zinc-800 text-zinc-300 border border-zinc-700/60">
                         {selectedCase.stableId}
                       </span>
-                      <span className="font-mono text-xs text-slate-400 bg-slate-950 px-2 py-0.5 rounded border border-slate-800 flex items-center gap-1">
-                        <GitBranch className="w-3 h-3 text-indigo-400" />
-                        Run Snapshot: v{selectedCase.revisionNumber}
+                      <span className="font-mono text-[11px] text-zinc-400 bg-zinc-950 px-2 py-0.5 rounded-md border border-zinc-800 flex items-center gap-1">
+                        <GitBranch className="w-3 h-3 text-zinc-500" />
+                        v{selectedCase.revisionNumber}
                       </span>
                       {selectedCase.snapshotModuleName && (
-                        <span className="text-xs text-slate-300 bg-slate-950 px-2 py-0.5 rounded border border-slate-800">
+                        <span className="text-xs text-zinc-400 bg-zinc-950 px-2 py-0.5 rounded-md border border-zinc-800">
                           {selectedCase.snapshotModuleName}
                         </span>
                       )}
                       <span
-                        className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${
+                        className={`text-[10px] font-medium px-2 py-0.5 rounded-md border ${
                           PRIORITY_CONFIG[selectedCase.snapshotPriority as Priority]?.badgeClass || ""
                         }`}
                       >
@@ -418,18 +414,18 @@ export function RunExecutionRunner({
                       </span>
                     </div>
 
-                    <h2 className="text-lg font-bold text-white mt-2">
+                    <h2 className="text-base font-semibold text-zinc-100 mt-1.5">
                       {selectedCase.snapshotTitle}
                     </h2>
 
                     {selectedCase.snapshotDescription && (
-                      <p className="text-xs text-slate-400 mt-1">{selectedCase.snapshotDescription}</p>
+                      <p className="text-xs text-zinc-400 mt-0.5">{selectedCase.snapshotDescription}</p>
                     )}
                   </div>
 
                   <div className="shrink-0 text-right">
                     <span
-                      className={`text-xs font-semibold px-3 py-1 rounded-full border ${
+                      className={`text-xs font-medium px-2.5 py-0.5 rounded-md border ${
                         EXECUTION_STATUS_CONFIG[selectedCase.currentStatus as ExecutionStatus]?.badgeClass || ""
                       }`}
                     >
@@ -440,33 +436,33 @@ export function RunExecutionRunner({
                 </div>
 
                 {/* Preconditions */}
-                <div className="p-3 rounded-lg bg-slate-950 border border-slate-800 text-xs">
-                  <span className="font-semibold text-slate-400 uppercase tracking-wider block text-[10px] mb-1">
+                <div className="p-2.5 rounded-lg bg-zinc-950 border border-zinc-800 text-xs">
+                  <span className="font-medium text-zinc-500 uppercase tracking-wider block text-[10px] mb-0.5">
                     Preconditions
                   </span>
-                  <p className="text-slate-300">
-                    {selectedCase.snapshotPreconditions || <span className="italic text-slate-600">None specified</span>}
+                  <p className="text-zinc-300">
+                    {selectedCase.snapshotPreconditions || <span className="italic text-zinc-600">None specified</span>}
                   </p>
                 </div>
 
                 {/* Ordered Steps Snapshot */}
-                <div className="space-y-2">
-                  <span className="font-semibold text-slate-400 uppercase tracking-wider block text-[10px]">
+                <div className="space-y-1.5">
+                  <span className="font-medium text-zinc-500 uppercase tracking-wider block text-[10px]">
                     Execution Steps (Snapshotted)
                   </span>
 
                   {Array.isArray(selectedCase.snapshotSteps) && selectedCase.snapshotSteps.length > 0 ? (
-                    <div className="divide-y divide-slate-800 border border-slate-800 rounded-lg overflow-hidden bg-slate-950/70">
+                    <div className="divide-y divide-zinc-800 border border-zinc-800 rounded-lg overflow-hidden bg-zinc-950/60">
                       {selectedCase.snapshotSteps.map((s: any, idx: number) => (
-                        <div key={idx} className="p-3 text-xs flex items-start gap-3">
-                          <span className="font-mono text-indigo-400 font-bold shrink-0">
+                        <div key={idx} className="p-2.5 text-xs flex items-start gap-2.5">
+                          <span className="font-mono text-zinc-400 font-medium shrink-0">
                             #{s.stepNumber || idx + 1}
                           </span>
-                          <div className="space-y-1 flex-1">
-                            <p className="text-slate-200">{s.instruction}</p>
+                          <div className="space-y-0.5 flex-1">
+                            <p className="text-zinc-200">{s.instruction}</p>
                             {s.expectedResult && (
-                              <p className="text-slate-400 text-[11px]">
-                                <strong className="text-slate-500">Expected:</strong> {s.expectedResult}
+                              <p className="text-zinc-400 text-[11px]">
+                                <span className="text-zinc-500">Expected:</span> {s.expectedResult}
                               </p>
                             )}
                           </div>
@@ -474,7 +470,7 @@ export function RunExecutionRunner({
                       ))}
                     </div>
                   ) : (
-                    <div className="p-3 text-xs text-slate-500 italic border border-slate-800 rounded-lg">
+                    <div className="p-2.5 text-xs text-zinc-500 italic border border-zinc-800 rounded-lg">
                       No discrete steps captured in this revision.
                     </div>
                   )}
@@ -482,46 +478,46 @@ export function RunExecutionRunner({
 
                 {/* Overall Expected Result */}
                 {selectedCase.snapshotExpectedResult && (
-                  <div className="p-3 rounded-lg bg-indigo-950/20 border border-indigo-900/30 text-xs">
-                    <span className="font-semibold text-indigo-300 uppercase tracking-wider block text-[10px] mb-1">
-                      Overall Expected Result
+                  <div className="p-2.5 rounded-lg bg-zinc-950 border border-zinc-800 text-xs">
+                    <span className="font-medium text-zinc-500 uppercase tracking-wider block text-[10px] mb-0.5">
+                      Expected Result
                     </span>
-                    <p className="text-indigo-200">{selectedCase.snapshotExpectedResult}</p>
+                    <p className="text-zinc-300">{selectedCase.snapshotExpectedResult}</p>
                   </div>
                 )}
               </div>
 
               {/* Execution Logger Card */}
               {canMutate && !isCompleted && (
-                <div className="bg-slate-900 border border-indigo-900/50 rounded-xl p-5 space-y-4">
+                <div className="bg-zinc-900/40 border border-zinc-800/80 rounded-xl p-4 space-y-3">
                   <div className="flex items-center justify-between">
-                    <h3 className="text-xs font-semibold text-white uppercase tracking-wider flex items-center gap-2">
-                      <Play className="w-3.5 h-3.5 text-indigo-400" />
-                      <span>Log Execution Result / Retest</span>
+                    <h3 className="text-xs font-medium text-zinc-200 uppercase tracking-wider flex items-center gap-1.5">
+                      <Play className="w-3 h-3 text-zinc-400" />
+                      <span>Log Execution Attempt</span>
                     </h3>
-                    <span className="text-[11px] text-slate-400">
-                      Each submission appends a new attempt without overwriting past history.
+                    <span className="text-[11px] text-zinc-500">
+                      Appends a new attempt to audit history
                     </span>
                   </div>
 
                   {errorMsg && (
-                    <div className="p-2.5 bg-red-950/60 border border-red-800/80 rounded-lg text-xs text-red-300 flex items-start gap-2">
-                      <AlertCircle className="w-4 h-4 shrink-0 text-red-400 mt-0.5" />
+                    <div className="p-2.5 bg-rose-950/40 border border-rose-800/60 rounded-lg text-xs text-rose-300 flex items-start gap-2">
+                      <AlertCircle className="w-4 h-4 shrink-0 text-rose-400 mt-0.5" />
                       <span>{errorMsg}</span>
                     </div>
                   )}
 
                   {successMsg && (
-                    <div className="p-2.5 bg-emerald-950/60 border border-emerald-800/80 rounded-lg text-xs text-emerald-300 flex items-center gap-2">
+                    <div className="p-2.5 bg-emerald-950/40 border border-emerald-800/60 rounded-lg text-xs text-emerald-300 flex items-center gap-2">
                       <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400" />
                       <span>{successMsg}</span>
                     </div>
                   )}
 
-                  <form onSubmit={handleRecordAttempt} className="space-y-4">
+                  <form onSubmit={handleRecordAttempt} className="space-y-3">
                     {/* Status selection buttons */}
                     <div>
-                      <label className="block text-[11px] font-medium text-slate-300 mb-1.5">
+                      <label className="block text-[11px] font-medium text-zinc-400 mb-1">
                         Outcome Status *
                       </label>
                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -534,16 +530,16 @@ export function RunExecutionRunner({
                               key={st}
                               type="button"
                               onClick={() => setAttemptStatus(st)}
-                              className={`py-2 px-3 rounded-lg text-xs font-bold border transition flex items-center justify-center gap-2 ${
+                              className={`py-1.5 px-3 rounded-lg text-xs font-medium border transition flex items-center justify-center gap-1.5 ${
                                 isSelected
-                                  ? `${cfg.badgeClass} ring-2 ring-offset-2 ring-offset-slate-900 ring-indigo-500`
-                                  : "bg-slate-950 border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700"
+                                  ? `${cfg.badgeClass} ring-1 ring-zinc-500`
+                                  : "bg-zinc-950 border-zinc-800 text-zinc-400 hover:text-zinc-200 hover:border-zinc-700"
                               }`}
                             >
-                              {st === "passed" && <CheckCircle2 className="w-4 h-4 text-emerald-400" />}
-                              {st === "failed" && <XCircle className="w-4 h-4 text-rose-400" />}
-                              {st === "blocked" && <AlertTriangle className="w-4 h-4 text-amber-400" />}
-                              {st === "skipped" && <HelpCircle className="w-4 h-4 text-indigo-400" />}
+                              {st === "passed" && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />}
+                              {st === "failed" && <XCircle className="w-3.5 h-3.5 text-rose-400" />}
+                              {st === "blocked" && <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />}
+                              {st === "skipped" && <HelpCircle className="w-3.5 h-3.5 text-zinc-400" />}
                               <span className="capitalize">{st}</span>
                             </button>
                           );
@@ -551,10 +547,10 @@ export function RunExecutionRunner({
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-4 gap-2.5">
                       <div className="sm:col-span-3">
-                        <label className="block text-[11px] font-medium text-slate-300 mb-1" htmlFor="actualResult">
-                          Actual Behavior / Execution Notes
+                        <label className="block text-[11px] font-medium text-zinc-400 mb-1" htmlFor="actualResult">
+                          Execution Notes / Actual Result
                         </label>
                         <textarea
                           id="actualResult"
@@ -562,12 +558,12 @@ export function RunExecutionRunner({
                           value={actualResult}
                           onChange={(e) => setActualResult(e.target.value)}
                           placeholder="e.g. Returned 200 OK with expected order confirmation. Or: Failed at step 2 with error 500."
-                          className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                          className="w-full px-2.5 py-1.5 bg-zinc-950 border border-zinc-800 rounded-lg text-xs text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:border-zinc-500"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-[11px] font-medium text-slate-300 mb-1" htmlFor="durationSeconds">
+                        <label className="block text-[11px] font-medium text-zinc-400 mb-1" htmlFor="durationSeconds">
                           Duration (sec)
                         </label>
                         <input
@@ -577,7 +573,7 @@ export function RunExecutionRunner({
                           value={durationSeconds}
                           onChange={(e) => setDurationSeconds(e.target.value)}
                           placeholder="e.g. 45"
-                          className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                          className="w-full px-2.5 py-1.5 bg-zinc-950 border border-zinc-800 rounded-lg text-xs text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:border-zinc-500"
                         />
                       </div>
                     </div>
@@ -586,13 +582,13 @@ export function RunExecutionRunner({
                       <button
                         type="submit"
                         disabled={isPending}
-                        className="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-800/60 disabled:cursor-not-allowed text-white text-xs font-semibold rounded-lg shadow transition flex items-center gap-2"
+                        className="px-4 py-1.5 bg-zinc-100 hover:bg-zinc-200 disabled:bg-zinc-800 disabled:text-zinc-500 disabled:cursor-not-allowed text-zinc-950 text-xs font-medium rounded-lg transition flex items-center gap-1.5"
                       >
                         {isPending ? (
-                          <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                          <div className="w-3.5 h-3.5 border-2 border-zinc-950/30 border-t-zinc-950 rounded-full animate-spin" />
                         ) : (
                           <>
-                            <Send className="w-3.5 h-3.5" />
+                            <Send className="w-3 h-3" />
                             <span>Log Attempt</span>
                           </>
                         )}
@@ -603,23 +599,23 @@ export function RunExecutionRunner({
               )}
 
               {/* Attempt History Section */}
-              <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3">
+              <div className="bg-zinc-900/40 border border-zinc-800/80 rounded-xl p-4 space-y-2.5">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-xs font-semibold text-white uppercase tracking-wider flex items-center gap-2">
-                    <History className="w-4 h-4 text-indigo-400" />
+                  <h3 className="text-xs font-medium text-zinc-200 uppercase tracking-wider flex items-center gap-1.5">
+                    <History className="w-3.5 h-3.5 text-zinc-400" />
                     <span>Attempt History ({selectedCase.attempts.length})</span>
                   </h3>
-                  <span className="text-[11px] text-slate-500 font-mono">
+                  <span className="text-[11px] text-zinc-500 font-mono">
                     Append-only audit trail
                   </span>
                 </div>
 
                 {selectedCase.attempts.length === 0 ? (
-                  <p className="text-xs text-slate-500 italic py-3">
+                  <p className="text-xs text-zinc-500 italic py-2">
                     No attempts recorded yet for this test case.
                   </p>
                 ) : (
-                  <div className="space-y-2">
+                  <div className="space-y-1.5">
                     {selectedCase.attempts.map((att) => {
                       const st = att.attempt.status as ExecutionStatus;
                       const cfg = EXECUTION_STATUS_CONFIG[st] || EXECUTION_STATUS_CONFIG.not_run;
@@ -627,39 +623,39 @@ export function RunExecutionRunner({
                       return (
                         <div
                           key={att.attempt.id}
-                          className="p-3 rounded-lg bg-slate-950/70 border border-slate-800/80 text-xs space-y-1.5"
+                          className="p-2.5 rounded-lg bg-zinc-950/60 border border-zinc-800/80 text-xs space-y-1"
                         >
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                              <span className="font-mono font-bold text-slate-300">
+                              <span className="font-mono font-medium text-zinc-200">
                                 Attempt #{att.attempt.attemptNumber}
                               </span>
                               <span
-                                className={`text-[9px] font-semibold px-2 py-0.5 rounded-full border ${cfg.badgeClass}`}
+                                className={`text-[9px] font-medium px-1.5 py-0.2 rounded-md border ${cfg.badgeClass}`}
                               >
                                 {cfg.label}
                               </span>
                               {att.attempt.durationSeconds && (
-                                <span className="text-slate-500 text-[10px] font-mono">
+                                <span className="text-zinc-500 text-[10px] font-mono">
                                   ({att.attempt.durationSeconds}s)
                                 </span>
                               )}
                             </div>
 
-                            <span className="text-[10px] text-slate-500 font-mono">
+                            <span className="text-[10px] text-zinc-500 font-mono">
                               {new Date(att.attempt.executedAt).toLocaleString()}
                             </span>
                           </div>
 
                           {att.attempt.actualResult && (
-                            <p className="text-slate-300 text-xs pl-2 border-l border-slate-700">
+                            <p className="text-zinc-300 text-xs pl-2 border-l border-zinc-700">
                               {att.attempt.actualResult}
                             </p>
                           )}
 
-                          <div className="text-[10px] text-slate-500 flex items-center gap-1.5 pt-0.5">
-                            <User className="w-3 h-3 text-slate-600" />
-                            <span>Executed by: {att.executorName || "QA Engineer"}</span>
+                          <div className="text-[10px] text-zinc-500 flex items-center gap-1.5 pt-0.5">
+                            <User className="w-3 h-3 text-zinc-600" />
+                            <span>By: {att.executorName || "QA Engineer"}</span>
                           </div>
                         </div>
                       );

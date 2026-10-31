@@ -42,23 +42,19 @@ export function ProjectStatusActions({
     <button
       onClick={handleToggle}
       disabled={isPending}
-      className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border transition ${
-        status === "active"
-          ? "border-amber-800/80 bg-amber-950/30 text-amber-300 hover:bg-amber-900/50"
-          : "border-emerald-800/80 bg-emerald-950/30 text-emerald-300 hover:bg-emerald-900/50"
-      }`}
+      className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-lg border border-zinc-800 bg-zinc-900/60 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 transition"
     >
       {isPending ? (
-        <div className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+        <div className="w-3.5 h-3.5 border-2 border-zinc-400 border-t-transparent rounded-full animate-spin" />
       ) : status === "active" ? (
         <>
           <Archive className="w-3.5 h-3.5" />
-          <span>Archive Project</span>
+          <span>Archive</span>
         </>
       ) : (
         <>
           <RotateCcw className="w-3.5 h-3.5" />
-          <span>Restore Project</span>
+          <span>Restore</span>
         </>
       )}
     </button>

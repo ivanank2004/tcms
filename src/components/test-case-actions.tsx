@@ -47,12 +47,12 @@ export function TestCaseActions({
   };
 
   return (
-    <div className="flex items-center gap-1.5">
+    <div className="flex items-center justify-end gap-1">
       <button
         onClick={handleDuplicate}
         disabled={isPending}
         title="Duplicate Test Case"
-        className="p-1.5 rounded-lg border border-slate-800 bg-slate-900 text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition"
+        className="p-1 rounded-md border border-zinc-800 bg-zinc-900/60 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 transition"
       >
         <Copy className="w-3.5 h-3.5" />
       </button>
@@ -62,7 +62,7 @@ export function TestCaseActions({
           onClick={handleDeprecate}
           disabled={isPending}
           title="Deprecate Test Case"
-          className="p-1.5 rounded-lg border border-slate-800 bg-slate-900 text-slate-400 hover:text-red-400 hover:bg-red-950/20 transition"
+          className="p-1 rounded-md border border-zinc-800 bg-zinc-900/60 text-zinc-400 hover:text-rose-400 hover:bg-rose-950/20 transition"
         >
           <Ban className="w-3.5 h-3.5" />
         </button>
