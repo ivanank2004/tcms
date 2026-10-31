@@ -1,6 +1,7 @@
 import { requireAuth } from "@/lib/auth/session";
 import { getWorkspaceBySlug, getWorkspaceMembers } from "@/lib/workspaces/actions";
 import { getWorkspaceProjects } from "@/lib/projects/actions";
+import { getWorkspaceDashboardMetrics } from "@/lib/dashboard/actions";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { CreateProjectModal } from "@/components/create-project-modal";
 import { AddMemberModal } from "@/components/add-member-modal";
@@ -16,6 +17,9 @@ import {
   ArrowRight,
   Archive,
   Layers,
+  CheckSquare,
+  PlayCircle,
+  Activity,
 } from "lucide-react";
 
 export default async function WorkspaceDetailsPage({
@@ -32,8 +36,11 @@ export default async function WorkspaceDetailsPage({
   }
 
   const { workspace, membership } = data;
-  const projects = await getWorkspaceProjects(workspace.id);
-  const members = await getWorkspaceMembers(workspace.id);
+  const [projects, members, metrics] = await Promise.all([
+    getWorkspaceProjects(workspace.id),
+    getWorkspaceMembers(workspace.id),
+    getWorkspaceDashboardMetrics(workspace.id),
+  ]);
 
   const canCreateProject = membership.role !== "viewer";
   const canManageMembers = membership.role === "owner" || membership.role === "admin";
@@ -76,6 +83,24 @@ export default async function WorkspaceDetailsPage({
                 <span>•</span>
                 <span>created: {new Date(workspace.createdAt).toLocaleDateString()}</span>
               </div>
+
+              {/* Workspace Health Stats */}
+              <div className="flex items-center gap-6 text-xs pt-4 mt-3 border-t border-slate-800">
+                <span className="flex items-center gap-1.5 text-slate-300">
+                  <FolderKanban className="w-3.5 h-3.5 text-indigo-400" />
+                  <strong>{metrics.activeProjects}</strong> Active Projects
+                </span>
+                <span className="text-slate-600">•</span>
+                <span className="flex items-center gap-1.5 text-slate-300">
+                  <CheckSquare className="w-3.5 h-3.5 text-sky-400" />
+                  <strong>{metrics.totalTestCases}</strong> Test Cases
+                </span>
+                <span className="text-slate-600">•</span>
+                <span className="flex items-center gap-1.5 text-slate-300">
+                  <PlayCircle className="w-3.5 h-3.5 text-emerald-400" />
+                  <strong>{metrics.totalTestRuns}</strong> Execution Sessions
+                </span>
+              </div>
             </div>
           </div>
 
@@ -85,6 +110,50 @@ export default async function WorkspaceDetailsPage({
           </div>
         </div>
       </div>
+
+      {/* Recent Workspace Execution Activity (if runs exist) */}
+      {metrics.recentRuns.length > 0 && (
+        <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3">
+          <div className="flex items-center justify-between">
+            <h3 className="text-xs font-semibold text-white uppercase tracking-wider flex items-center gap-2">
+              <Activity className="w-4 h-4 text-indigo-400" />
+              <span>Recent Workspace Runs Activity</span>
+            </h3>
+            <span className="text-[11px] text-slate-500 font-mono">Latest cross-project runs</span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {metrics.recentRuns.slice(0, 3).map((r) => (
+              <Link
+                key={r.id}
+                href={`/workspaces/${workspace.slug}/projects/${r.projectKey}/test-runs/${r.id}`}
+                className="p-3.5 rounded-lg bg-slate-950/60 border border-slate-800/80 hover:border-slate-700 transition flex flex-col justify-between space-y-2"
+              >
+                <div>
+                  <div className="flex items-center justify-between text-[11px] mb-1">
+                    <span className="font-mono text-indigo-300 font-bold">{r.projectKey}</span>
+                    <span className="capitalize text-slate-400 font-mono text-[10px]">{r.environment}</span>
+                  </div>
+                  <h4 className="text-xs font-semibold text-white truncate">{r.name}</h4>
+                </div>
+
+                <div className="space-y-1 pt-1">
+                  <div className="flex items-center justify-between text-[10px] text-slate-400">
+                    <span>Progress: {r.progressPercent}%</span>
+                    <span className="text-emerald-400">{r.passedCases} passed</span>
+                  </div>
+                  <div className="w-full h-1 rounded-full bg-slate-900 overflow-hidden">
+                    <div
+                      style={{ width: `${r.progressPercent}%` }}
+                      className="bg-indigo-500 h-full"
+                    />
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Projects Section */}
       <div>

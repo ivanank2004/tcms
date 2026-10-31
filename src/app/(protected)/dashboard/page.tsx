@@ -17,7 +17,7 @@ export default async function DashboardPage() {
             Welcome back, {user.name}
           </h1>
           <p className="text-sm text-slate-400 mt-1">
-            Manage your workspaces, projects, and test repositories from a single hub.
+            Centralized test case repository, planning, and execution management hub.
           </p>
         </div>
         <div>
@@ -31,7 +31,7 @@ export default async function DashboardPage() {
           <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
           <div className="text-xs">
             <span className="text-slate-300 font-medium">Neon PostgreSQL Connected</span>
-            <span className="text-slate-500 ml-2">Branch: production • Drizzle ORM Serverless</span>
+            <span className="text-slate-500 ml-2">Branch: production • Drizzle ORM Serverless WebSocket</span>
           </div>
         </div>
         <div className="text-xs text-slate-500">

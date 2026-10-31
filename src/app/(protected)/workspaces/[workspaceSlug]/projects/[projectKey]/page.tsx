@@ -5,10 +5,12 @@ import { getProjectModules } from "@/lib/modules/actions";
 import { getProjectTestCases } from "@/lib/test-cases/actions";
 import { getProjectTestPlans } from "@/lib/test-plans/actions";
 import { getProjectTestRuns } from "@/lib/test-runs/actions";
+import { getProjectDashboardMetrics } from "@/lib/dashboard/actions";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { CreateModuleModal } from "@/components/create-module-modal";
 import { ProjectStatusActions } from "@/components/project-status-actions";
 import { ModuleStatusActions } from "@/components/module-status-actions";
+import { ProjectDashboardTabs } from "@/components/project-dashboard-tabs";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import {
@@ -46,11 +48,12 @@ export default async function ProjectDetailPage({
     notFound();
   }
 
-  const [modules, testCasesData, plansData, runsData] = await Promise.all([
+  const [modules, testCasesData, plansData, runsData, dashboardMetrics] = await Promise.all([
     getProjectModules(project.id),
     getProjectTestCases(project.id, { pageSize: 1 }),
     getProjectTestPlans(project.id, { pageSize: 1 }),
     getProjectTestRuns(project.id, { pageSize: 1 }),
+    getProjectDashboardMetrics(project.id),
   ]);
 
   const canManageProject = membership.role === "owner" || membership.role === "admin";
@@ -238,6 +241,13 @@ export default async function ProjectDetailPage({
           </div>
         </div>
       </div>
+
+      {/* Project Dashboard (Overview, QA & Dev Perspectives) */}
+      <ProjectDashboardTabs
+        workspaceSlug={workspace.slug}
+        projectKey={project.key}
+        metrics={dashboardMetrics}
+      />
 
       {/* Modules & Features Hierarchy Section */}
       <div>
