@@ -2,6 +2,10 @@ import { config } from "dotenv";
 config({ path: ".env.local" });
 config({ path: ".env" });
 
+if (!process.env.WS_NO_BUFFER_UTIL) {
+  process.env.WS_NO_BUFFER_UTIL = "1";
+}
+
 import { Pool, neonConfig } from "@neondatabase/serverless";
 import { drizzle } from "drizzle-orm/neon-serverless";
 import ws from "ws";

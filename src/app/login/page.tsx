@@ -71,7 +71,7 @@ export default function LoginPage() {
           )}
 
           {/* Form */}
-          <form action={mode === "signin" ? signInFormAction : signUpFormAction} className="space-y-4">
+          <form key={mode} action={mode === "signin" ? signInFormAction : signUpFormAction} className="space-y-4">
             {mode === "signup" && (
               <div>
                 <label className="block text-xs font-medium text-zinc-300 mb-1.5" htmlFor="name">
@@ -127,7 +127,7 @@ export default function LoginPage() {
                 <div className="w-4 h-4 border-2 border-zinc-950/30 border-t-zinc-950 rounded-full animate-spin" />
               ) : (
                 <>
-                  <span>{mode === "signin" ? "Sign In" : "Get Started"}</span>
+                  <span>{mode === "signin" ? "Sign In" : "Create Account"}</span>
                   <ArrowRight className="w-4 h-4" />
                 </>
               )}
