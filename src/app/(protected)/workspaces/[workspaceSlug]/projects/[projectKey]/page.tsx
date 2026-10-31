@@ -3,6 +3,8 @@ import { getWorkspaceBySlug } from "@/lib/workspaces/actions";
 import { getProjectByKey } from "@/lib/projects/actions";
 import { getProjectModules } from "@/lib/modules/actions";
 import { getProjectTestCases } from "@/lib/test-cases/actions";
+import { getProjectTestPlans } from "@/lib/test-plans/actions";
+import { getProjectTestRuns } from "@/lib/test-runs/actions";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { CreateModuleModal } from "@/components/create-module-modal";
 import { ProjectStatusActions } from "@/components/project-status-actions";
@@ -21,6 +23,8 @@ import {
   CheckSquare,
   ArrowRight,
   Plus,
+  FolderGit2,
+  PlayCircle,
 } from "lucide-react";
 
 export default async function ProjectDetailPage({
@@ -42,8 +46,12 @@ export default async function ProjectDetailPage({
     notFound();
   }
 
-  const modules = await getProjectModules(project.id);
-  const testCasesData = await getProjectTestCases(project.id, { pageSize: 1 });
+  const [modules, testCasesData, plansData, runsData] = await Promise.all([
+    getProjectModules(project.id),
+    getProjectTestCases(project.id, { pageSize: 1 }),
+    getProjectTestPlans(project.id, { pageSize: 1 }),
+    getProjectTestRuns(project.id, { pageSize: 1 }),
+  ]);
 
   const canManageProject = membership.role === "owner" || membership.role === "admin";
   const canMutateModules = membership.role !== "viewer" && project.status === "active";
@@ -129,42 +137,105 @@ export default async function ProjectDetailPage({
         </div>
       )}
 
-      {/* Test Cases Repository Banner */}
-      <div className="bg-gradient-to-r from-indigo-950/40 via-slate-900 to-slate-900 border border-indigo-900/40 rounded-2xl p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center shrink-0">
-            <CheckSquare className="w-6 h-6" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h2 className="text-base font-semibold text-white">Test Cases Repository</h2>
-              <span className="font-mono text-xs px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 font-medium">
-                {testCasesData.total} {testCasesData.total === 1 ? "case" : "cases"}
-              </span>
+      {/* QA Workflow Hub: Repository, Plans & Execution Runs */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Test Cases Repository Card */}
+        <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 hover:border-slate-700 transition flex flex-col justify-between">
+          <div className="space-y-3">
+            <div className="w-10 h-10 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center">
+              <CheckSquare className="w-5 h-5" />
             </div>
-            <p className="text-xs text-slate-400 mt-1">
-              Search, filter, edit, import/export CSV, and view full revision histories for {project.name}.
-            </p>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-semibold text-white">Repository</h3>
+                <span className="font-mono text-[10px] px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 font-medium">
+                  {testCasesData.total}
+                </span>
+              </div>
+              <p className="text-xs text-slate-400 mt-1">
+                Reusable test cases with step-by-step instructions and versioned history.
+              </p>
+            </div>
+          </div>
+
+          <div className="pt-4 mt-3 border-t border-slate-800/80 flex items-center justify-between">
+            {canMutateModules ? (
+              <Link
+                href={`/workspaces/${workspace.slug}/projects/${project.key}/test-cases/new`}
+                className="text-xs text-slate-400 hover:text-slate-200"
+              >
+                + New Case
+              </Link>
+            ) : <span />}
+
+            <Link
+              href={`/workspaces/${workspace.slug}/projects/${project.key}/test-cases`}
+              className="inline-flex items-center gap-1 text-xs font-semibold text-indigo-400 hover:text-indigo-300"
+            >
+              <span>Browse Cases</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
           </div>
         </div>
 
-        <div className="flex items-center gap-3 shrink-0">
-          {canMutateModules && (
+        {/* Test Plans Card */}
+        <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 hover:border-slate-700 transition flex flex-col justify-between">
+          <div className="space-y-3">
+            <div className="w-10 h-10 rounded-lg bg-sky-500/10 border border-sky-500/20 text-sky-400 flex items-center justify-center">
+              <FolderGit2 className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-semibold text-white">Test Plans</h3>
+                <span className="font-mono text-[10px] px-2 py-0.5 rounded-full bg-sky-500/20 text-sky-300 border border-sky-500/30 font-medium">
+                  {plansData.total}
+                </span>
+              </div>
+              <p className="text-xs text-slate-400 mt-1">
+                Organize testing scopes, target releases, and select repository cases.
+              </p>
+            </div>
+          </div>
+
+          <div className="pt-4 mt-3 border-t border-slate-800/80 flex items-center justify-end">
             <Link
-              href={`/workspaces/${workspace.slug}/projects/${project.key}/test-cases/new`}
-              className="inline-flex items-center gap-1.5 px-3 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-xs font-medium rounded-lg transition"
+              href={`/workspaces/${workspace.slug}/projects/${project.key}/test-plans`}
+              className="inline-flex items-center gap-1 text-xs font-semibold text-sky-400 hover:text-sky-300"
             >
-              <Plus className="w-3.5 h-3.5" />
-              <span>New Case</span>
+              <span>View Plans</span>
+              <ArrowRight className="w-3.5 h-3.5" />
             </Link>
-          )}
-          <Link
-            href={`/workspaces/${workspace.slug}/projects/${project.key}/test-cases`}
-            className="inline-flex items-center gap-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-lg shadow-sm transition"
-          >
-            <span>Open Repository</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
+          </div>
+        </div>
+
+        {/* Execution Runs Card */}
+        <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 hover:border-slate-700 transition flex flex-col justify-between">
+          <div className="space-y-3">
+            <div className="w-10 h-10 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center">
+              <PlayCircle className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-semibold text-white">Execution Runs</h3>
+                <span className="font-mono text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-medium">
+                  {runsData.total}
+                </span>
+              </div>
+              <p className="text-xs text-slate-400 mt-1">
+                Execute runs, log Pass/Fail/Blocked attempts, and track live progress.
+              </p>
+            </div>
+          </div>
+
+          <div className="pt-4 mt-3 border-t border-slate-800/80 flex items-center justify-end">
+            <Link
+              href={`/workspaces/${workspace.slug}/projects/${project.key}/test-runs`}
+              className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-400 hover:text-emerald-300"
+            >
+              <span>View Runs</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
         </div>
       </div>
 

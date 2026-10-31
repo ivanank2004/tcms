@@ -164,6 +164,116 @@ export const testCaseRevisions = pgTable("test_case_revisions", {
   index("test_case_revisions_case_id_idx").on(table.testCaseId),
 ]);
 
+export const testPlans = pgTable("test_plans", {
+  id: text("id").primaryKey(),
+  projectId: text("project_id")
+    .notNull()
+    .references(() => projects.id, { onDelete: "cascade" }),
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  scopeNotes: text("scope_notes"),
+  targetRelease: varchar("target_release", { length: 100 }),
+  environment: varchar("environment", { length: 50 }),
+  plannedStartDate: timestamp("planned_start_date", { withTimezone: true }),
+  dueDate: timestamp("due_date", { withTimezone: true }),
+  ownerId: text("owner_id").references(() => users.id, { onDelete: "set null" }),
+  status: varchar("status", { length: 20 }).notNull().default("draft"), // 'draft' | 'active' | 'completed' | 'archived'
+  createdBy: text("created_by")
+    .notNull()
+    .references(() => users.id, { onDelete: "restrict" }),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+}, (table) => [
+  index("test_plans_project_id_idx").on(table.projectId),
+  index("test_plans_status_idx").on(table.status),
+]);
+
+export const testPlanCases = pgTable("test_plan_cases", {
+  id: text("id").primaryKey(),
+  testPlanId: text("test_plan_id")
+    .notNull()
+    .references(() => testPlans.id, { onDelete: "cascade" }),
+  testCaseId: text("test_case_id")
+    .notNull()
+    .references(() => testCases.id, { onDelete: "cascade" }),
+  addedAt: timestamp("added_at", { withTimezone: true }).defaultNow().notNull(),
+}, (table) => [
+  uniqueIndex("test_plan_cases_plan_case_idx").on(table.testPlanId, table.testCaseId),
+  index("test_plan_cases_plan_id_idx").on(table.testPlanId),
+  index("test_plan_cases_case_id_idx").on(table.testCaseId),
+]);
+
+export const testRuns = pgTable("test_runs", {
+  id: text("id").primaryKey(),
+  projectId: text("project_id")
+    .notNull()
+    .references(() => projects.id, { onDelete: "cascade" }),
+  testPlanId: text("test_plan_id").references(() => testPlans.id, { onDelete: "set null" }),
+  name: varchar("name", { length: 255 }).notNull(),
+  environment: varchar("environment", { length: 50 }).notNull().default("staging"),
+  buildVersion: varchar("build_version", { length: 100 }),
+  assignedTo: text("assigned_to").references(() => users.id, { onDelete: "set null" }),
+  status: varchar("status", { length: 20 }).notNull().default("not_started"), // 'not_started' | 'in_progress' | 'completed' | 'aborted'
+  notes: text("notes"),
+  startedAt: timestamp("started_at", { withTimezone: true }),
+  completedAt: timestamp("completed_at", { withTimezone: true }),
+  createdBy: text("created_by")
+    .notNull()
+    .references(() => users.id, { onDelete: "restrict" }),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+}, (table) => [
+  index("test_runs_project_id_idx").on(table.projectId),
+  index("test_runs_plan_id_idx").on(table.testPlanId),
+  index("test_runs_status_idx").on(table.status),
+]);
+
+export const testRunCases = pgTable("test_run_cases", {
+  id: text("id").primaryKey(),
+  testRunId: text("test_run_id")
+    .notNull()
+    .references(() => testRuns.id, { onDelete: "cascade" }),
+  testCaseId: text("test_case_id")
+    .notNull()
+    .references(() => testCases.id, { onDelete: "restrict" }),
+  revisionNumber: integer("revision_number").notNull(),
+  snapshotTitle: varchar("snapshot_title", { length: 500 }).notNull(),
+  snapshotDescription: text("snapshot_description"),
+  snapshotPreconditions: text("snapshot_preconditions"),
+  snapshotSteps: jsonb("snapshot_steps").notNull(), // StepSnapshot[]
+  snapshotExpectedResult: text("snapshot_expected_result"),
+  snapshotPriority: varchar("snapshot_priority", { length: 20 }).notNull(),
+  snapshotModuleName: varchar("snapshot_module_name", { length: 255 }),
+  currentStatus: varchar("current_status", { length: 20 }).notNull().default("not_run"), // 'not_run' | 'passed' | 'failed' | 'blocked' | 'skipped'
+  lastExecutedAt: timestamp("last_executed_at", { withTimezone: true }),
+  lastExecutedBy: text("last_executed_by").references(() => users.id, { onDelete: "set null" }),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+}, (table) => [
+  uniqueIndex("test_run_cases_run_case_idx").on(table.testRunId, table.testCaseId),
+  index("test_run_cases_run_id_idx").on(table.testRunId),
+  index("test_run_cases_case_id_idx").on(table.testCaseId),
+  index("test_run_cases_status_idx").on(table.currentStatus),
+]);
+
+export const testExecutionAttempts = pgTable("test_execution_attempts", {
+  id: text("id").primaryKey(),
+  testRunCaseId: text("test_run_case_id")
+    .notNull()
+    .references(() => testRunCases.id, { onDelete: "cascade" }),
+  attemptNumber: integer("attempt_number").notNull(),
+  status: varchar("status", { length: 20 }).notNull(), // 'passed' | 'failed' | 'blocked' | 'skipped'
+  actualResult: text("actual_result"),
+  durationSeconds: integer("duration_seconds"),
+  executedBy: text("executed_by")
+    .notNull()
+    .references(() => users.id, { onDelete: "restrict" }),
+  executedAt: timestamp("executed_at", { withTimezone: true }).defaultNow().notNull(),
+}, (table) => [
+  uniqueIndex("test_execution_attempts_case_attempt_idx").on(table.testRunCaseId, table.attemptNumber),
+  index("test_execution_attempts_case_id_idx").on(table.testRunCaseId),
+  index("test_execution_attempts_status_idx").on(table.status),
+]);
+
 // Relational mappings
 export const usersRelations = relations(users, ({ many }) => ({
   memberships: many(workspaceMembers),
@@ -264,6 +374,83 @@ export const testCaseRevisionsRelations = relations(testCaseRevisions, ({ one })
   }),
 }));
 
+export const testPlansRelations = relations(testPlans, ({ one, many }) => ({
+  project: one(projects, {
+    fields: [testPlans.projectId],
+    references: [projects.id],
+  }),
+  owner: one(users, {
+    fields: [testPlans.ownerId],
+    references: [users.id],
+    relationName: "testPlanOwner",
+  }),
+  creator: one(users, {
+    fields: [testPlans.createdBy],
+    references: [users.id],
+    relationName: "testPlanCreator",
+  }),
+  planCases: many(testPlanCases),
+  runs: many(testRuns),
+}));
+
+export const testPlanCasesRelations = relations(testPlanCases, ({ one }) => ({
+  plan: one(testPlans, {
+    fields: [testPlanCases.testPlanId],
+    references: [testPlans.id],
+  }),
+  testCase: one(testCases, {
+    fields: [testPlanCases.testCaseId],
+    references: [testCases.id],
+  }),
+}));
+
+export const testRunsRelations = relations(testRuns, ({ one, many }) => ({
+  project: one(projects, {
+    fields: [testRuns.projectId],
+    references: [projects.id],
+  }),
+  testPlan: one(testPlans, {
+    fields: [testRuns.testPlanId],
+    references: [testPlans.id],
+  }),
+  assignee: one(users, {
+    fields: [testRuns.assignedTo],
+    references: [users.id],
+  }),
+  creator: one(users, {
+    fields: [testRuns.createdBy],
+    references: [users.id],
+  }),
+  runCases: many(testRunCases),
+}));
+
+export const testRunCasesRelations = relations(testRunCases, ({ one, many }) => ({
+  run: one(testRuns, {
+    fields: [testRunCases.testRunId],
+    references: [testRuns.id],
+  }),
+  testCase: one(testCases, {
+    fields: [testRunCases.testCaseId],
+    references: [testCases.id],
+  }),
+  executor: one(users, {
+    fields: [testRunCases.lastExecutedBy],
+    references: [users.id],
+  }),
+  attempts: many(testExecutionAttempts),
+}));
+
+export const testExecutionAttemptsRelations = relations(testExecutionAttempts, ({ one }) => ({
+  runCase: one(testRunCases, {
+    fields: [testExecutionAttempts.testRunCaseId],
+    references: [testRunCases.id],
+  }),
+  executor: one(users, {
+    fields: [testExecutionAttempts.executedBy],
+    references: [users.id],
+  }),
+}));
+
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 export type Session = typeof sessions.$inferSelect;
@@ -279,3 +466,13 @@ export type TestCaseStep = typeof testCaseSteps.$inferSelect;
 export type NewTestCaseStep = typeof testCaseSteps.$inferInsert;
 export type TestCaseRevision = typeof testCaseRevisions.$inferSelect;
 export type NewTestCaseRevision = typeof testCaseRevisions.$inferInsert;
+export type TestPlan = typeof testPlans.$inferSelect;
+export type NewTestPlan = typeof testPlans.$inferInsert;
+export type TestPlanCase = typeof testPlanCases.$inferSelect;
+export type NewTestPlanCase = typeof testPlanCases.$inferInsert;
+export type TestRun = typeof testRuns.$inferSelect;
+export type NewTestRun = typeof testRuns.$inferInsert;
+export type TestRunCase = typeof testRunCases.$inferSelect;
+export type NewTestRunCase = typeof testRunCases.$inferInsert;
+export type TestExecutionAttempt = typeof testExecutionAttempts.$inferSelect;
+export type NewTestExecutionAttempt = typeof testExecutionAttempts.$inferInsert;
