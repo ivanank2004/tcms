@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import { workspaceMembers, type WorkspaceMember } from "@/db/schema";
+import { workspaceMembers, projects, type WorkspaceMember, type Project } from "@/db/schema";
 import { and, eq } from "drizzle-orm";
 import { getCurrentUser } from "./session";
 
@@ -52,4 +52,28 @@ export async function requireWorkspaceMembership(
   }
 
   return { user, membership };
+}
+
+export async function requireProjectAccess(
+  workspaceId: string,
+  projectId: string,
+  allowedRoles?: WorkspaceRole[]
+): Promise<{
+  user: NonNullable<Awaited<ReturnType<typeof getCurrentUser>>>;
+  membership: WorkspaceMember;
+  project: Project;
+}> {
+  const { user, membership } = await requireWorkspaceMembership(workspaceId, allowedRoles);
+
+  const [project] = await db
+    .select()
+    .from(projects)
+    .where(and(eq(projects.id, projectId), eq(projects.workspaceId, workspaceId)))
+    .limit(1);
+
+  if (!project) {
+    throw new Error("Project not found in this workspace");
+  }
+
+  return { user, membership, project };
 }

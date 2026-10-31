@@ -64,9 +64,10 @@ export default async function DashboardPage() {
           /* Workspace Cards Grid */
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {userWorkspaces.map(({ workspace, membership }) => (
-              <div
+              <Link
                 key={workspace.id}
-                className="bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-xl p-5 transition flex flex-col justify-between group shadow-sm"
+                href={`/workspaces/${workspace.slug}`}
+                className="bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-xl p-5 transition flex flex-col justify-between group shadow-sm hover:bg-slate-900/90"
               >
                 <div>
                   <div className="flex items-start justify-between gap-3 mb-3">
@@ -102,7 +103,7 @@ export default async function DashboardPage() {
                     <ArrowRight className="w-3.5 h-3.5" />
                   </div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         )}

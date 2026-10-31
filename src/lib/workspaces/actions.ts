@@ -2,9 +2,10 @@
 
 import { z } from "zod";
 import { db } from "@/db";
-import { workspaces, workspaceMembers, type Workspace } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { workspaces, workspaceMembers, users, type Workspace, type WorkspaceMember } from "@/db/schema";
+import { eq, and } from "drizzle-orm";
 import { requireAuth } from "@/lib/auth/session";
+import { requireWorkspaceMembership, type WorkspaceRole } from "@/lib/auth/authorization";
 import { revalidatePath } from "next/cache";
 
 const CreateWorkspaceSchema = z.object({
@@ -97,4 +98,171 @@ export async function getUserWorkspaces(userId: string) {
     .from(workspaceMembers)
     .innerJoin(workspaces, eq(workspaceMembers.workspaceId, workspaces.id))
     .where(eq(workspaceMembers.userId, userId));
+}
+
+export async function getWorkspaceBySlug(slug: string, userId: string) {
+  const [result] = await db
+    .select({
+      workspace: workspaces,
+      membership: workspaceMembers,
+    })
+    .from(workspaces)
+    .innerJoin(
+      workspaceMembers,
+      and(
+        eq(workspaceMembers.workspaceId, workspaces.id),
+        eq(workspaceMembers.userId, userId)
+      )
+    )
+    .where(eq(workspaces.slug, slug))
+    .limit(1);
+
+  return result || null;
+}
+
+export async function getWorkspaceMembers(workspaceId: string) {
+  return await db
+    .select({
+      member: workspaceMembers,
+      user: {
+        id: users.id,
+        name: users.name,
+        email: users.email,
+        avatarUrl: users.avatarUrl,
+      },
+    })
+    .from(workspaceMembers)
+    .innerJoin(users, eq(workspaceMembers.userId, users.id))
+    .where(eq(workspaceMembers.workspaceId, workspaceId));
+}
+
+const AddMemberSchema = z.object({
+  workspaceId: z.string().min(1, "Workspace is required"),
+  email: z.string().trim().email("Invalid email address").toLowerCase(),
+  role: z.enum(["admin", "member", "viewer"]),
+});
+
+export async function addWorkspaceMemberAction(
+  prevState: { error?: string; success?: boolean } | null,
+  formData: FormData
+) {
+  const workspaceId = formData.get("workspaceId")?.toString() || "";
+  const email = formData.get("email")?.toString() || "";
+  const role = formData.get("role")?.toString() || "member";
+
+  const parsed = AddMemberSchema.safeParse({ workspaceId, email, role });
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message || "Invalid input" };
+  }
+
+  try {
+    // Only Owner or Admin can add members
+    const { membership } = await requireWorkspaceMembership(workspaceId, ["owner", "admin"]);
+
+    const [targetUser] = await db
+      .select({ id: users.id, email: users.email })
+      .from(users)
+      .where(eq(users.email, parsed.data.email))
+      .limit(1);
+
+    if (!targetUser) {
+      return { error: `No registered account found with email "${parsed.data.email}". User must sign up first.` };
+    }
+
+    const [existingMember] = await db
+      .select({ id: workspaceMembers.id })
+      .from(workspaceMembers)
+      .where(
+        and(
+          eq(workspaceMembers.workspaceId, workspaceId),
+          eq(workspaceMembers.userId, targetUser.id)
+        )
+      )
+      .limit(1);
+
+    if (existingMember) {
+      return { error: "This user is already a member of this workspace." };
+    }
+
+    await db.insert(workspaceMembers).values({
+      id: crypto.randomUUID(),
+      workspaceId,
+      userId: targetUser.id,
+      role: parsed.data.role,
+    });
+
+    revalidatePath(`/workspaces`);
+    return { success: true };
+  } catch (error: any) {
+    return { error: error.message || "Failed to add workspace member." };
+  }
+}
+
+export async function updateMemberRoleAction(
+  workspaceId: string,
+  memberId: string,
+  newRole: WorkspaceRole
+) {
+  try {
+    const { membership } = await requireWorkspaceMembership(workspaceId, ["owner", "admin"]);
+
+    const [targetMember] = await db
+      .select()
+      .from(workspaceMembers)
+      .where(and(eq(workspaceMembers.id, memberId), eq(workspaceMembers.workspaceId, workspaceId)))
+      .limit(1);
+
+    if (!targetMember) {
+      return { error: "Member not found" };
+    }
+
+    if (targetMember.role === "owner") {
+      return { error: "Owner role cannot be changed via role update" };
+    }
+
+    if (membership.role === "admin" && (targetMember.role === "admin" || newRole === "admin")) {
+      return { error: "Only the workspace owner can manage admin roles" };
+    }
+
+    await db
+      .update(workspaceMembers)
+      .set({ role: newRole })
+      .where(eq(workspaceMembers.id, memberId));
+
+    revalidatePath(`/workspaces`);
+    return { success: true };
+  } catch (error: any) {
+    return { error: error.message || "Failed to update member role." };
+  }
+}
+
+export async function removeWorkspaceMemberAction(workspaceId: string, memberId: string) {
+  try {
+    const { membership } = await requireWorkspaceMembership(workspaceId, ["owner", "admin"]);
+
+    const [targetMember] = await db
+      .select()
+      .from(workspaceMembers)
+      .where(and(eq(workspaceMembers.id, memberId), eq(workspaceMembers.workspaceId, workspaceId)))
+      .limit(1);
+
+    if (!targetMember) {
+      return { error: "Member not found" };
+    }
+
+    if (targetMember.role === "owner") {
+      return { error: "Cannot remove the workspace owner" };
+    }
+
+    if (membership.role === "admin" && targetMember.role === "admin") {
+      return { error: "Only the workspace owner can remove an admin" };
+    }
+
+    await db.delete(workspaceMembers).where(eq(workspaceMembers.id, memberId));
+
+    revalidatePath(`/workspaces`);
+    return { success: true };
+  } catch (error: any) {
+    return { error: error.message || "Failed to remove workspace member." };
+  }
 }
