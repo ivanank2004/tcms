@@ -41,6 +41,9 @@ export interface SeedPlan {
   targetRelease: string;
   environment: string;
   status: "draft" | "active" | "completed" | "archived";
+  plannedStartDate?: string;
+  dueDate?: string;
+  owner?: "owner" | "collaborator";
   caseKeys: string[];
 }
 
@@ -49,6 +52,7 @@ export interface SeedRunCaseAttempt {
   status: "passed" | "failed" | "blocked" | "skipped";
   actualResult: string;
   durationSeconds: number;
+  executedBy?: "owner" | "collaborator";
 }
 
 export interface SeedRunCase {
@@ -64,6 +68,9 @@ export interface SeedRun {
   environment: string;
   buildVersion: string;
   status: "not_started" | "in_progress" | "completed" | "aborted";
+  assignedTo?: "owner" | "collaborator";
+  startedAtOffsetHours?: number;
+  completedAtOffsetHours?: number;
   notes: string;
   cases: SeedRunCase[];
 }
@@ -103,6 +110,9 @@ export const SEED_PROJECTS: SeedProject[] = [
         targetRelease: "v2.4.0",
         environment: "staging",
         status: "active",
+        plannedStartDate: "2026-10-15T09:00:00Z",
+        dueDate: "2026-10-31T18:00:00Z",
+        owner: "owner",
         caseKeys: ["SHOP-001", "SHOP-002", "SHOP-003", "SHOP-004", "SHOP-005", "SHOP-006", "SHOP-007", "SHOP-008"]
       },
       {
@@ -112,6 +122,9 @@ export const SEED_PROJECTS: SeedProject[] = [
         targetRelease: "v2.4.1",
         environment: "uat",
         status: "completed",
+        plannedStartDate: "2026-10-01T09:00:00Z",
+        dueDate: "2026-10-20T18:00:00Z",
+        owner: "collaborator",
         caseKeys: ["SHOP-001", "SHOP-002", "SHOP-006", "SHOP-015"]
       },
       {
@@ -119,9 +132,12 @@ export const SEED_PROJECTS: SeedProject[] = [
         description: "Stress scenario planning for promotional voucher stacking, fast checkout, and inventory locking.",
         scopeNotes: "Covers cart concurrency, promo codes, and order placement under load.",
         targetRelease: "v2.5.0",
-        environment: "perf-lab",
+        environment: "staging",
         status: "draft",
-        caseKeys: ["SHOP-003", "SHOP-004", "SHOP-005", "SHOP-008", "SHOP-012"]
+        plannedStartDate: "2026-11-10T09:00:00Z",
+        dueDate: "2026-11-25T18:00:00Z",
+        owner: "owner",
+        caseKeys: ["SHOP-003", "SHOP-004", "SHOP-005", "SHOP-008", "SHOP-012", "SHOP-013"]
       }
     ],
     runs: [
@@ -131,6 +147,8 @@ export const SEED_PROJECTS: SeedProject[] = [
         environment: "staging",
         buildVersion: "build-2026.10.48",
         status: "in_progress",
+        assignedTo: "owner",
+        startedAtOffsetHours: 48,
         notes: "Automated + manual hybrid regression pass for Sprint 48 release candidate.",
         cases: [
           {
@@ -141,13 +159,15 @@ export const SEED_PROJECTS: SeedProject[] = [
                 attemptNumber: 1,
                 status: "failed",
                 actualResult: "SMS OTP modal timed out after 30 seconds due to latency in sandbox SMS gateway.",
-                durationSeconds: 42
+                durationSeconds: 42,
+                executedBy: "collaborator"
               },
               {
                 attemptNumber: 2,
                 status: "passed",
                 actualResult: "Retested with sandbox bypass code 000000. 3DS verified and payment token generated successfully.",
-                durationSeconds: 18
+                durationSeconds: 18,
+                executedBy: "owner"
               }
             ]
           },
@@ -160,7 +180,8 @@ export const SEED_PROJECTS: SeedProject[] = [
                 attemptNumber: 1,
                 status: "passed",
                 actualResult: "Expired card correctly rejected with user-friendly message 'Card has expired'.",
-                durationSeconds: 15
+                durationSeconds: 15,
+                executedBy: "owner"
               }
             ]
           },
@@ -172,7 +193,8 @@ export const SEED_PROJECTS: SeedProject[] = [
                 attemptNumber: 1,
                 status: "passed",
                 actualResult: "15% discount voucher subtracted correctly from cart subtotal.",
-                durationSeconds: 22
+                durationSeconds: 22,
+                executedBy: "collaborator"
               }
             ]
           },
@@ -184,7 +206,8 @@ export const SEED_PROJECTS: SeedProject[] = [
                 attemptNumber: 1,
                 status: "failed",
                 actualResult: "BUG: System allowed combining coupon 'SAVE10' with exclusive VIP voucher 'VIP20'.",
-                durationSeconds: 31
+                durationSeconds: 31,
+                executedBy: "owner"
               }
             ]
           },
@@ -196,7 +219,8 @@ export const SEED_PROJECTS: SeedProject[] = [
                 attemptNumber: 1,
                 status: "blocked",
                 actualResult: "Blocked: Redis cart session cache cluster was undergoing maintenance during execution.",
-                durationSeconds: 5
+                durationSeconds: 5,
+                executedBy: "collaborator"
               }
             ]
           },
@@ -208,7 +232,8 @@ export const SEED_PROJECTS: SeedProject[] = [
                 attemptNumber: 1,
                 status: "skipped",
                 actualResult: "Skipped: Feature flag for multi-currency settlement was toggled off on staging.",
-                durationSeconds: 0
+                durationSeconds: 0,
+                executedBy: "owner"
               }
             ]
           },
@@ -228,6 +253,9 @@ export const SEED_PROJECTS: SeedProject[] = [
         environment: "uat",
         buildVersion: "build-2026.10.45-audit",
         status: "completed",
+        assignedTo: "collaborator",
+        startedAtOffsetHours: 72,
+        completedAtOffsetHours: 24,
         notes: "Full audit certification for PCI-DSS 4.0 cardholder data environment.",
         cases: [
           {
@@ -238,7 +266,8 @@ export const SEED_PROJECTS: SeedProject[] = [
                 attemptNumber: 1,
                 status: "passed",
                 actualResult: "Full challenge flow verified without storing raw CVV/PAN in local storage.",
-                durationSeconds: 25
+                durationSeconds: 25,
+                executedBy: "collaborator"
               }
             ]
           },
@@ -251,7 +280,8 @@ export const SEED_PROJECTS: SeedProject[] = [
                 attemptNumber: 1,
                 status: "passed",
                 actualResult: "Expired card declined cleanly.",
-                durationSeconds: 12
+                durationSeconds: 12,
+                executedBy: "collaborator"
               }
             ]
           },
@@ -263,7 +293,8 @@ export const SEED_PROJECTS: SeedProject[] = [
                 attemptNumber: 1,
                 status: "passed",
                 actualResult: "Tokenization proxy confirmed non-reversible hash generated.",
-                durationSeconds: 19
+                durationSeconds: 19,
+                executedBy: "collaborator"
               }
             ]
           },
@@ -275,10 +306,28 @@ export const SEED_PROJECTS: SeedProject[] = [
                 attemptNumber: 1,
                 status: "passed",
                 actualResult: "Idempotency key prevents duplicate charges on network retry.",
-                durationSeconds: 28
+                durationSeconds: 28,
+                executedBy: "collaborator"
               }
             ]
           }
+        ]
+      },
+      {
+        name: "Peak Load Staging Verification Run",
+        planName: "Black Friday Load & High-Volume Preparation",
+        environment: "staging",
+        buildVersion: "build-2026.11.01-perf",
+        status: "not_started",
+        assignedTo: "owner",
+        notes: "Pending test environment warm-up before running concurrency benchmark.",
+        cases: [
+          { caseKey: "SHOP-003", status: "not_run" },
+          { caseKey: "SHOP-004", status: "not_run" },
+          { caseKey: "SHOP-005", status: "not_run" },
+          { caseKey: "SHOP-008", status: "not_run" },
+          { caseKey: "SHOP-012", status: "not_run" },
+          { caseKey: "SHOP-013", status: "not_run" }
         ]
       }
     ],
@@ -665,32 +714,53 @@ export const SEED_PROJECTS: SeedProject[] = [
     ],
     plans: [
       {
-        name: "Q4 Platform Release Plan",
+        name: "Q4 Platform Release Acceptance Plan",
         description: "End-to-end certification of LMS core workflows: enrollment, progress checkpoints, and quiz submissions.",
         scopeNotes: "Covers all ready test cases across Student and Instructor roles.",
         targetRelease: "v4.1.0",
         environment: "staging",
         status: "active",
+        plannedStartDate: "2026-10-10T08:00:00Z",
+        dueDate: "2026-11-05T18:00:00Z",
+        owner: "owner",
         caseKeys: ["LEARN-001", "LEARN-002", "LEARN-003", "LEARN-004", "LEARN-005", "LEARN-006", "LEARN-007", "LEARN-008"]
       },
       {
-        name: "SCORM Interactive Multimedia Verification",
+        name: "SCORM Interactive Multimedia Certification",
         description: "Verification of third-party SCORM 1.2 and 2004 interactive package communication.",
         scopeNotes: "Focuses on Lesson Multimedia and Progress Tracker integrations.",
         targetRelease: "v4.2.0",
-        environment: "uat",
-        status: "draft",
+        environment: "qa",
+        status: "active",
+        plannedStartDate: "2026-11-01T08:00:00Z",
+        dueDate: "2026-11-20T18:00:00Z",
+        owner: "collaborator",
         caseKeys: ["LEARN-003", "LEARN-009", "LEARN-010", "LEARN-014"]
+      },
+      {
+        name: "Enterprise SAML & SSO Onboarding Plan",
+        description: "Integration certification for enterprise identity providers including Okta and Azure AD.",
+        scopeNotes: "Covers authentication, JIT provisioning, and authorization group mapping.",
+        targetRelease: "v4.0.5",
+        environment: "development",
+        status: "archived",
+        plannedStartDate: "2026-09-01T08:00:00Z",
+        dueDate: "2026-09-25T18:00:00Z",
+        owner: "owner",
+        caseKeys: ["LEARN-001", "LEARN-002", "LEARN-011", "LEARN-012"]
       }
     ],
     runs: [
       {
-        name: "Staging Smoke Run",
-        planName: "Q4 Platform Release Plan",
+        name: "LMS Core Smoke & Acceptance Run",
+        planName: "Q4 Platform Release Acceptance Plan",
         environment: "staging",
         buildVersion: "build-learn-4.1.2",
         status: "completed",
-        notes: "Automated smoke validation for deployment sprint.",
+        assignedTo: "collaborator",
+        startedAtOffsetHours: 96,
+        completedAtOffsetHours: 48,
+        notes: "Automated smoke and functional acceptance validation for LMS Q4 deployment.",
         cases: [
           {
             caseKey: "LEARN-001",
@@ -700,7 +770,8 @@ export const SEED_PROJECTS: SeedProject[] = [
                 attemptNumber: 1,
                 status: "passed",
                 actualResult: "Student enrolled instantly and received onboarding welcome notification.",
-                durationSeconds: 14
+                durationSeconds: 14,
+                executedBy: "collaborator"
               }
             ]
           },
@@ -712,7 +783,8 @@ export const SEED_PROJECTS: SeedProject[] = [
                 attemptNumber: 1,
                 status: "passed",
                 actualResult: "Instructor access to self-grade blocked by RBAC permission rule.",
-                durationSeconds: 9
+                durationSeconds: 9,
+                executedBy: "collaborator"
               }
             ]
           },
@@ -724,19 +796,28 @@ export const SEED_PROJECTS: SeedProject[] = [
                 attemptNumber: 1,
                 status: "passed",
                 actualResult: "SCORM completion event triggered progress increment.",
-                durationSeconds: 34
+                durationSeconds: 34,
+                executedBy: "collaborator"
               }
             ]
           },
           {
             caseKey: "LEARN-004",
-            status: "blocked",
+            status: "passed",
             attempts: [
               {
                 attemptNumber: 1,
-                status: "blocked",
-                actualResult: "Blocked: WebSockets quiz server connection unreachable on port 8089 in staging.",
-                durationSeconds: 6
+                status: "failed",
+                actualResult: "WebSockets quiz server connection dropped on port 8089 in staging.",
+                durationSeconds: 12,
+                executedBy: "collaborator"
+              },
+              {
+                attemptNumber: 2,
+                status: "passed",
+                actualResult: "Retested on fallback long-polling channel; responses received with zero packet loss.",
+                durationSeconds: 21,
+                executedBy: "owner"
               }
             ]
           },
@@ -748,10 +829,124 @@ export const SEED_PROJECTS: SeedProject[] = [
                 attemptNumber: 1,
                 status: "passed",
                 actualResult: "Course draft published successfully to catalog.",
-                durationSeconds: 19
+                durationSeconds: 19,
+                executedBy: "collaborator"
+              }
+            ]
+          },
+          {
+            caseKey: "LEARN-006",
+            status: "passed",
+            attempts: [
+              {
+                attemptNumber: 1,
+                status: "passed",
+                actualResult: "Automated grading calculations match syllabus weights perfectly.",
+                durationSeconds: 16,
+                executedBy: "collaborator"
+              }
+            ]
+          },
+          {
+            caseKey: "LEARN-007",
+            status: "passed",
+            attempts: [
+              {
+                attemptNumber: 1,
+                status: "passed",
+                actualResult: "Certificate of completion generated and downloadable as signed PDF.",
+                durationSeconds: 28,
+                executedBy: "collaborator"
+              }
+            ]
+          },
+          {
+            caseKey: "LEARN-008",
+            status: "passed",
+            attempts: [
+              {
+                attemptNumber: 1,
+                status: "passed",
+                actualResult: "Student discussion forum rate limiter limits post frequency accurately.",
+                durationSeconds: 11,
+                executedBy: "collaborator"
               }
             ]
           }
+        ]
+      },
+      {
+        name: "Mid-Sprint Regression & Accessibility Pass",
+        planName: "Q4 Platform Release Acceptance Plan",
+        environment: "qa",
+        buildVersion: "build-learn-4.1.5-rc1",
+        status: "in_progress",
+        assignedTo: "owner",
+        startedAtOffsetHours: 24,
+        notes: "Manual spot check of accessibility, contrast ratios, and role boundary restrictions.",
+        cases: [
+          {
+            caseKey: "LEARN-001",
+            status: "passed",
+            attempts: [
+              {
+                attemptNumber: 1,
+                status: "passed",
+                actualResult: "Keyboard navigation tabs cleanly through course enrollment modal.",
+                durationSeconds: 18,
+                executedBy: "owner"
+              }
+            ]
+          },
+          {
+            caseKey: "LEARN-002",
+            status: "failed",
+            attempts: [
+              {
+                attemptNumber: 1,
+                status: "failed",
+                actualResult: "Instructor role elevation check failed: student session was able to view draft answer key via direct URL parameter.",
+                durationSeconds: 26,
+                executedBy: "owner"
+              }
+            ]
+          },
+          {
+            caseKey: "LEARN-003",
+            status: "blocked",
+            attempts: [
+              {
+                attemptNumber: 1,
+                status: "blocked",
+                actualResult: "CDN asset delivery cluster throwing HTTP 403 on HLS video manifest.",
+                durationSeconds: 8,
+                executedBy: "owner"
+              }
+            ]
+          },
+          {
+            caseKey: "LEARN-005",
+            status: "not_run"
+          },
+          {
+            caseKey: "LEARN-006",
+            status: "not_run"
+          }
+        ]
+      },
+      {
+        name: "Cross-Browser Media & A11y Run",
+        planName: "SCORM Interactive Multimedia Certification",
+        environment: "development",
+        buildVersion: "build-learn-4.2.0-alpha",
+        status: "not_started",
+        assignedTo: "collaborator",
+        notes: "Scheduled execution for multi-browser SCORM compatibility matrix.",
+        cases: [
+          { caseKey: "LEARN-003", status: "not_run" },
+          { caseKey: "LEARN-009", status: "not_run" },
+          { caseKey: "LEARN-010", status: "not_run" },
+          { caseKey: "LEARN-014", status: "not_run" }
         ]
       }
     ],
@@ -1113,31 +1308,51 @@ export const SEED_PROJECTS: SeedProject[] = [
     ],
     plans: [
       {
-        name: "SLA Engine & Escalation Critical Path",
+        name: "SLA Engine & Escalation Critical Path Plan",
         description: "Verification of breach warnings, manager escalation triggers, and weekend business hour offsets.",
         scopeNotes: "Strict focus on SLA calculations and automatic ticket reassignment.",
         targetRelease: "v3.1.0",
         environment: "staging",
         status: "active",
+        plannedStartDate: "2026-10-12T09:00:00Z",
+        dueDate: "2026-11-02T18:00:00Z",
+        owner: "owner",
         caseKeys: ["HELP-001", "HELP-002", "HELP-003", "HELP-004", "HELP-005", "HELP-006", "HELP-007"]
       },
       {
-        name: "Omnichannel Ticket Ingestion Verification",
+        name: "Omnichannel Ticket Ingestion Verification Plan",
         description: "Validate ticket creation via web portal, email parsing, and REST API.",
         scopeNotes: "Covers Ticket Submission and Routing & Assignment modules.",
         targetRelease: "v3.2.0",
-        environment: "uat",
-        status: "draft",
+        environment: "development",
+        status: "active",
+        plannedStartDate: "2026-11-05T09:00:00Z",
+        dueDate: "2026-11-30T18:00:00Z",
+        owner: "collaborator",
         caseKeys: ["HELP-001", "HELP-003", "HELP-008", "HELP-009"]
+      },
+      {
+        name: "Executive Reporting & Analytics Audit Plan",
+        description: "CSAT satisfaction score, first-contact resolution rates, and agent backlog reporting.",
+        scopeNotes: "Covers Analytics & Reporting module dashboards and metrics.",
+        targetRelease: "v3.0.9",
+        environment: "qa",
+        status: "completed",
+        plannedStartDate: "2026-09-15T09:00:00Z",
+        dueDate: "2026-10-05T18:00:00Z",
+        owner: "owner",
+        caseKeys: ["HELP-005", "HELP-006", "HELP-007", "HELP-010"]
       }
     ],
     runs: [
       {
         name: "Helpdesk Core E2E Run",
-        planName: "SLA Engine & Escalation Critical Path",
+        planName: "SLA Engine & Escalation Critical Path Plan",
         environment: "staging",
         buildVersion: "build-help-3.1.8",
         status: "in_progress",
+        assignedTo: "owner",
+        startedAtOffsetHours: 36,
         notes: "Live staging execution of SLA engine and agent assignment matrix.",
         cases: [
           {
@@ -1148,7 +1363,8 @@ export const SEED_PROJECTS: SeedProject[] = [
                 attemptNumber: 1,
                 status: "passed",
                 actualResult: "Incident automatically assigned to on-call Tier 2 agent.",
-                durationSeconds: 15
+                durationSeconds: 15,
+                executedBy: "owner"
               }
             ]
           },
@@ -1160,7 +1376,15 @@ export const SEED_PROJECTS: SeedProject[] = [
                 attemptNumber: 1,
                 status: "failed",
                 actualResult: "SLA breach warning email was not dispatched at 80% mark due to queue worker delay.",
-                durationSeconds: 24
+                durationSeconds: 24,
+                executedBy: "owner"
+              },
+              {
+                attemptNumber: 2,
+                status: "failed",
+                actualResult: "Retest confirmed: SLA countdown still desynchronized under UTC+7 timezone offset, delaying warning dispatch.",
+                durationSeconds: 30,
+                executedBy: "collaborator"
               }
             ]
           },
@@ -1172,7 +1396,8 @@ export const SEED_PROJECTS: SeedProject[] = [
                 attemptNumber: 1,
                 status: "passed",
                 actualResult: "Oversized 28MB attachment correctly blocked with user notification.",
-                durationSeconds: 11
+                durationSeconds: 11,
+                executedBy: "owner"
               }
             ]
           },
@@ -1184,7 +1409,8 @@ export const SEED_PROJECTS: SeedProject[] = [
                 attemptNumber: 1,
                 status: "blocked",
                 actualResult: "Blocked: DLP PII redaction microservice endpoint returned 503 Service Unavailable.",
-                durationSeconds: 7
+                durationSeconds: 7,
+                executedBy: "collaborator"
               }
             ]
           },
@@ -1195,8 +1421,9 @@ export const SEED_PROJECTS: SeedProject[] = [
               {
                 attemptNumber: 1,
                 status: "skipped",
-                actualResult: "Skipped: Automated CSV reporting cron job is suspended for maintenance.",
-                durationSeconds: 0
+                actualResult: "Skipped: Automated CSV reporting cron job is suspended for maintenance during testing window.",
+                durationSeconds: 0,
+                executedBy: "owner"
               }
             ]
           },
@@ -1208,6 +1435,86 @@ export const SEED_PROJECTS: SeedProject[] = [
             caseKey: "HELP-007",
             status: "not_run"
           }
+        ]
+      },
+      {
+        name: "Helpdesk Release Gate 100% Smoke Pass",
+        planName: "SLA Engine & Escalation Critical Path Plan",
+        environment: "qa",
+        buildVersion: "build-help-3.1.9-rc",
+        status: "completed",
+        assignedTo: "collaborator",
+        startedAtOffsetHours: 60,
+        completedAtOffsetHours: 12,
+        notes: "Sanity smoke gate prior to staging deployment.",
+        cases: [
+          {
+            caseKey: "HELP-001",
+            status: "passed",
+            attempts: [
+              {
+                attemptNumber: 1,
+                status: "passed",
+                actualResult: "Customer critical escalation route operational.",
+                durationSeconds: 14,
+                executedBy: "collaborator"
+              }
+            ]
+          },
+          {
+            caseKey: "HELP-003",
+            status: "passed",
+            attempts: [
+              {
+                attemptNumber: 1,
+                status: "passed",
+                actualResult: "Ticket attachment validation rejects dangerous file extensions.",
+                durationSeconds: 10,
+                executedBy: "collaborator"
+              }
+            ]
+          },
+          {
+            caseKey: "HELP-006",
+            status: "passed",
+            attempts: [
+              {
+                attemptNumber: 1,
+                status: "passed",
+                actualResult: "First contact resolution timer stopped on valid agent reply.",
+                durationSeconds: 22,
+                executedBy: "collaborator"
+              }
+            ]
+          },
+          {
+            caseKey: "HELP-007",
+            status: "passed",
+            attempts: [
+              {
+                attemptNumber: 1,
+                status: "passed",
+                actualResult: "CSAT survey trigger sent to customer email following ticket closure.",
+                durationSeconds: 17,
+                executedBy: "collaborator"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        name: "Inbound Email & Anti-Spam Verification Run",
+        planName: "Omnichannel Ticket Ingestion Verification Plan",
+        environment: "development",
+        buildVersion: "build-help-3.2.0-dev",
+        status: "not_started",
+        assignedTo: "owner",
+        notes: "Awaiting MX record DNS propagation in test sandbox before triggering inbound email payloads.",
+        cases: [
+          { caseKey: "HELP-001", status: "not_run" },
+          { caseKey: "HELP-003", status: "not_run" },
+          { caseKey: "HELP-008", status: "not_run" },
+          { caseKey: "HELP-009", status: "not_run" }
         ]
       }
     ],

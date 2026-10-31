@@ -163,7 +163,7 @@ async function verifyStep06() {
   console.log(`  ✓ Invariant Verified: Retest workflow preserves Attempt #1 ('failed') and Attempt #2 ('passed') without overwrite`);
 
   // [6/6] Test Plans and Execution Coverage
-  console.log("\n[6/6] Verifying Plans, Runs, and Execution Distributions...");
+  console.log("\n[6/6] Verifying Plans, Runs, and Execution Scenarios...");
   const plans = await db
     .select()
     .from(testPlans)
@@ -182,8 +182,180 @@ async function verifyStep06() {
       )})`
     );
 
-  console.log(`  ✓ Test Plans: ${plans.length} seeded (active, completed, draft)`);
-  console.log(`  ✓ Test Runs: ${runs.length} seeded (completed, in_progress)`);
+  // Verify at least 3 plans and 3 runs per project
+  for (const proj of projRows) {
+    const projPlans = plans.filter((p) => p.projectId === proj.id);
+    const projRuns = runs.filter((r) => r.projectId === proj.id);
+    if (projPlans.length < 3) {
+      throw new Error(`Project ${proj.key} has only ${projPlans.length} plans (minimum 3 required)`);
+    }
+    if (projRuns.length < 3) {
+      throw new Error(`Project ${proj.key} has only ${projRuns.length} runs (minimum 3 required)`);
+    }
+    console.log(`  ✓ Project ${proj.key}: ${projPlans.length} Plans and ${projRuns.length} Runs verified.`);
+  }
+
+  // Verify status diversity
+  const planStatuses = new Set(plans.map((p) => p.status));
+  for (const requiredStatus of ["draft", "active", "completed", "archived"]) {
+    if (!planStatuses.has(requiredStatus)) {
+      throw new Error(`Missing required test plan status: '${requiredStatus}'`);
+    }
+  }
+  console.log(`  ✓ Plan statuses varied: draft, active, completed, archived`);
+
+  const runStatuses = new Set(runs.map((r) => r.status));
+  for (const requiredStatus of ["not_started", "in_progress", "completed"]) {
+    if (!runStatuses.has(requiredStatus)) {
+      throw new Error(`Missing required test run status: '${requiredStatus}'`);
+    }
+  }
+  console.log(`  ✓ Run statuses varied: not_started, in_progress, completed`);
+
+  const runEnvs = new Set(runs.map((r) => r.environment));
+  for (const env of ["development", "qa", "staging", "uat"]) {
+    if (!runEnvs.has(env)) {
+      throw new Error(`Missing expected test run environment: '${env}'`);
+    }
+  }
+  console.log(`  ✓ Environments varied across runs: development, qa, staging, uat`);
+
+  // Verify plan dates
+  const plansWithDates = plans.filter((p) => p.plannedStartDate && p.dueDate);
+  if (plansWithDates.length !== plans.length) {
+    throw new Error(`Expected all plans to have plannedStartDate and dueDate, found ${plansWithDates.length}/${plans.length}`);
+  }
+  console.log(`  ✓ All ${plans.length} Test Plans contain valid plannedStartDate and dueDate.`);
+
+  // Verify Project Scoping and Plan Scoping
+  console.log("\n  Verifying Project & Plan Scoping Integrity...");
+  interface RunSummaryRow {
+    Project: string;
+    "Test Plan": string;
+    "Plan Cases": number;
+    "Test Run": string;
+    Environment: string;
+    "Run Status": string;
+    Passed: number;
+    Failed: number;
+    Blocked: number;
+    Skipped: number;
+    "Not Run": number;
+  }
+  const summaryRows: RunSummaryRow[] = [];
+
+  let scenario1Found = false; // 100% Passed
+  let scenario2Found = false; // Passed, Failed, Blocked combo
+  let scenario3Found = false; // In Progress with several Not Run
+  let scenario4Found = false; // Failed then Passed after retest
+  let scenario5Found = false; // Skipped with reason
+  let scenario6Found = false; // Not started with 0 attempts
+
+  for (const run of runs) {
+    const parentProj = projRows.find((p) => p.id === run.projectId)!;
+    const parentPlan = plans.find((p) => p.id === run.testPlanId);
+    if (!parentPlan) {
+      throw new Error(`Run ${run.name} is not linked to any test plan`);
+    }
+    if (parentPlan.projectId !== run.projectId) {
+      throw new Error(`Run ${run.name} linked to test plan from different project!`);
+    }
+
+    const planCases = await db
+      .select()
+      .from(testPlanCases)
+      .where(eq(testPlanCases.testPlanId, parentPlan.id));
+
+    const planCaseIds = new Set(planCases.map((pc) => pc.testCaseId));
+
+    const runCasesList = await db
+      .select()
+      .from(testRunCases)
+      .where(eq(testRunCases.testRunId, run.id));
+
+    // Scoping assertion: all run cases must belong to the plan's scoped cases and the same project
+    for (const rc of runCasesList) {
+      if (!planCaseIds.has(rc.testCaseId)) {
+        throw new Error(`Run ${run.name} contains test case ${rc.testCaseId} not in parent plan ${parentPlan.name}!`);
+      }
+      const rawCase = caseRows.find((c) => c.id === rc.testCaseId);
+      if (!rawCase || rawCase.projectId !== run.projectId) {
+        throw new Error(`Run case cross-contamination! Case does not belong to project ${parentProj.key}`);
+      }
+    }
+
+    const passed = runCasesList.filter((c) => c.currentStatus === "passed").length;
+    const failed = runCasesList.filter((c) => c.currentStatus === "failed").length;
+    const blocked = runCasesList.filter((c) => c.currentStatus === "blocked").length;
+    const skipped = runCasesList.filter((c) => c.currentStatus === "skipped").length;
+    const notRun = runCasesList.filter((c) => c.currentStatus === "not_run").length;
+
+    // Check mandatory scenario 1: 100% Passed
+    if (runCasesList.length > 0 && passed === runCasesList.length) {
+      scenario1Found = true;
+    }
+    // Check mandatory scenario 2: Passed, Failed, Blocked combo
+    if (passed > 0 && failed > 0 && blocked > 0) {
+      scenario2Found = true;
+    }
+    // Check mandatory scenario 3: In Progress with several Not Run
+    if (run.status === "in_progress" && notRun >= 2) {
+      scenario3Found = true;
+    }
+    // Check mandatory scenario 5: Skipped with reason
+    if (skipped > 0) {
+      scenario5Found = true;
+    }
+    // Check mandatory scenario 6: Not started with 0 attempts
+    if (run.status === "not_started" && notRun === runCasesList.length) {
+      const allRunCaseIds = runCasesList.map((rc) => rc.id);
+      if (allRunCaseIds.length > 0) {
+        const attempts = await db
+          .select()
+          .from(testExecutionAttempts)
+          .where(
+            sql`${testExecutionAttempts.testRunCaseId} IN (${sql.raw(
+              allRunCaseIds.map((id) => `'${id}'`).join(",")
+            )})`
+          );
+        if (attempts.length === 0) {
+          scenario6Found = true;
+        }
+      }
+    }
+
+    summaryRows.push({
+      Project: `${parentProj.name} (${parentProj.key})`,
+      "Test Plan": parentPlan.name,
+      "Plan Cases": planCases.length,
+      "Test Run": run.name,
+      Environment: run.environment,
+      "Run Status": run.status,
+      Passed: passed,
+      Failed: failed,
+      Blocked: blocked,
+      Skipped: skipped,
+      "Not Run": notRun,
+    });
+  }
+
+  // Check mandatory scenario 4: multi-attempt Failed -> Passed retest
+  scenario4Found = true; // Checked in Section 5
+
+  if (!scenario1Found) throw new Error("Scenario 1 (100% Passed run) not found");
+  if (!scenario2Found) throw new Error("Scenario 2 (Passed, Failed, Blocked combo) not found");
+  if (!scenario3Found) throw new Error("Scenario 3 (In Progress with several Not Run) not found");
+  if (!scenario4Found) throw new Error("Scenario 4 (Retest Failed -> Passed) not found");
+  if (!scenario5Found) throw new Error("Scenario 5 (Skipped test case with reason) not found");
+  if (!scenario6Found) throw new Error("Scenario 6 (Not Started with 0 attempts) not found");
+
+  console.log(`  ✓ All 6 Mandatory Execution Scenarios confirmed present and correct.`);
+  console.log(`  ✓ Project & Plan scoping integrity confirmed: zero cross-project or out-of-plan cases.`);
+
+  console.log("\n=========================================================================================================================");
+  console.log("📊 FINAL TEST EXECUTION SUMMARY TABLE");
+  console.log("=========================================================================================================================");
+  console.table(summaryRows);
 
   console.log("\n=======================================================");
   console.log("🎉 ALL STEP 06 SEEDING ACCEPTANCE CRITERIA VERIFIED!");

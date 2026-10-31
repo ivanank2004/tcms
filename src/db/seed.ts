@@ -364,6 +364,10 @@ async function runSeed() {
 
     for (const plan of p.plans) {
       const planId = seedId("plan", `${p.key}:${plan.name}`);
+      const ownerId = plan.owner === "collaborator" ? collabUserId : primaryUser.id;
+      const plannedStartDate = plan.plannedStartDate ? new Date(plan.plannedStartDate) : null;
+      const dueDate = plan.dueDate ? new Date(plan.dueDate) : null;
+
       await db
         .insert(testPlans)
         .values({
@@ -374,8 +378,10 @@ async function runSeed() {
           scopeNotes: plan.scopeNotes,
           targetRelease: plan.targetRelease,
           environment: plan.environment,
+          plannedStartDate,
+          dueDate,
           status: plan.status,
-          ownerId: primaryUser.id,
+          ownerId,
           createdBy: primaryUser.id,
         })
         .onConflictDoUpdate({
@@ -385,6 +391,9 @@ async function runSeed() {
             scopeNotes: plan.scopeNotes,
             targetRelease: plan.targetRelease,
             environment: plan.environment,
+            plannedStartDate,
+            dueDate,
+            ownerId,
             status: plan.status,
             updatedAt: new Date(),
           },
@@ -423,6 +432,21 @@ async function runSeed() {
         ? seedId("plan", `${p.key}:${run.planName}`)
         : null;
 
+      const runAssigneeId = run.assignedTo === "collaborator" ? collabUserId : primaryUser.id;
+      const startedAt =
+        run.status === "not_started"
+          ? null
+          : run.startedAtOffsetHours
+          ? new Date(Date.now() - run.startedAtOffsetHours * 3600000)
+          : new Date(Date.now() - 3600000 * 24);
+
+      const completedAt =
+        run.status === "completed"
+          ? run.completedAtOffsetHours
+            ? new Date(Date.now() - run.completedAtOffsetHours * 3600000)
+            : new Date()
+          : null;
+
       await db
         .insert(testRuns)
         .values({
@@ -434,17 +458,21 @@ async function runSeed() {
           buildVersion: run.buildVersion,
           status: run.status,
           notes: run.notes,
-          assignedTo: primaryUser.id,
-          startedAt: run.status !== "not_started" ? new Date(Date.now() - 3600000 * 24) : null,
-          completedAt: run.status === "completed" ? new Date() : null,
+          assignedTo: runAssigneeId,
+          startedAt,
+          completedAt,
           createdBy: primaryUser.id,
         })
         .onConflictDoUpdate({
           target: testRuns.id,
           set: {
+            environment: run.environment,
             status: run.status,
             notes: run.notes,
             buildVersion: run.buildVersion,
+            assignedTo: runAssigneeId,
+            startedAt,
+            completedAt,
             updatedAt: new Date(),
           },
         });
@@ -471,6 +499,9 @@ async function runSeed() {
           : rawCase.rev2?.expectedResult || rawCase.expectedResult;
         const snapRevNumber = isRev1Freeze ? 1 : rawCase.rev2 ? 2 : 1;
 
+        const caseExecutorId =
+          rc.status !== "not_run" ? runAssigneeId : null;
+
         await db
           .insert(testRunCases)
           .values({
@@ -487,7 +518,7 @@ async function runSeed() {
             snapshotModuleName: rawCase.moduleName,
             currentStatus: rc.status,
             lastExecutedAt: rc.status !== "not_run" ? new Date() : null,
-            lastExecutedBy: rc.status !== "not_run" ? primaryUser.id : null,
+            lastExecutedBy: caseExecutorId,
           })
           .onConflictDoUpdate({
             target: testRunCases.id,
@@ -496,6 +527,7 @@ async function runSeed() {
               snapshotTitle: snapTitle,
               snapshotSteps: snapSteps,
               lastExecutedAt: rc.status !== "not_run" ? new Date() : null,
+              lastExecutedBy: caseExecutorId,
             },
           });
         totalRunCases++;
@@ -504,6 +536,9 @@ async function runSeed() {
         if (rc.attempts && rc.attempts.length > 0) {
           for (const att of rc.attempts) {
             const attemptId = seedId("attempt", `${runCaseId}:${att.attemptNumber}`);
+            const attemptExecutorId =
+              att.executedBy === "collaborator" ? collabUserId : primaryUser.id;
+
             await db
               .insert(testExecutionAttempts)
               .values({
@@ -513,7 +548,7 @@ async function runSeed() {
                 status: att.status,
                 actualResult: att.actualResult,
                 durationSeconds: att.durationSeconds,
-                executedBy: primaryUser.id,
+                executedBy: attemptExecutorId,
                 executedAt: new Date(Date.now() - (rc.attempts.length - att.attemptNumber) * 3600000),
               })
               .onConflictDoUpdate({
@@ -522,6 +557,7 @@ async function runSeed() {
                   status: att.status,
                   actualResult: att.actualResult,
                   durationSeconds: att.durationSeconds,
+                  executedBy: attemptExecutorId,
                 },
               });
             totalAttempts++;
@@ -532,8 +568,89 @@ async function runSeed() {
   }
   console.log(`  ✓ Seeded ${totalRuns} Test Runs, ${totalRunCases} Snapshots, and ${totalAttempts} Execution Attempts.`);
 
-  // 8. Summary of Database Seeding
-  console.log("\n[7/7] Verifying relational consistency...");
+  // 8. Generate and display Summary Table
+  console.log("\n[7/7] Generating Verification Summary Table...");
+
+  interface RunSummaryRow {
+    Project: string;
+    "Test Plan": string;
+    "Plan Cases": number;
+    "Test Run": string;
+    Environment: string;
+    "Run Status": string;
+    Passed: number;
+    Failed: number;
+    Blocked: number;
+    Skipped: number;
+    "Not Run": number;
+  }
+
+  const summaryRows: RunSummaryRow[] = [];
+
+  const seededProjects = await db
+    .select()
+    .from(projects)
+    .where(eq(projects.workspaceId, workspaceId));
+
+  for (const proj of seededProjects) {
+    const projRuns = await db
+      .select()
+      .from(testRuns)
+      .where(eq(testRuns.projectId, proj.id));
+
+    for (const run of projRuns) {
+      let planName = "-";
+      let planCasesCount = 0;
+
+      if (run.testPlanId) {
+        const plan = await db
+          .select()
+          .from(testPlans)
+          .where(eq(testPlans.id, run.testPlanId))
+          .limit(1);
+
+        if (plan[0]) {
+          planName = plan[0].name;
+          const pc = await db
+            .select()
+            .from(testPlanCases)
+            .where(eq(testPlanCases.testPlanId, run.testPlanId));
+          planCasesCount = pc.length;
+        }
+      }
+
+      const runCasesList = await db
+        .select()
+        .from(testRunCases)
+        .where(eq(testRunCases.testRunId, run.id));
+
+      const passed = runCasesList.filter((c) => c.currentStatus === "passed").length;
+      const failed = runCasesList.filter((c) => c.currentStatus === "failed").length;
+      const blocked = runCasesList.filter((c) => c.currentStatus === "blocked").length;
+      const skipped = runCasesList.filter((c) => c.currentStatus === "skipped").length;
+      const notRun = runCasesList.filter((c) => c.currentStatus === "not_run").length;
+
+      summaryRows.push({
+        Project: `${proj.name} (${proj.key})`,
+        "Test Plan": planName,
+        "Plan Cases": planCasesCount,
+        "Test Run": run.name,
+        Environment: run.environment,
+        "Run Status": run.status,
+        Passed: passed,
+        Failed: failed,
+        Blocked: blocked,
+        Skipped: skipped,
+        "Not Run": notRun,
+      });
+    }
+  }
+
+  console.log("\n=========================================================================================================================");
+  console.log("📊 TEST EXECUTION SUMMARY TABLE");
+  console.log("=========================================================================================================================");
+  console.table(summaryRows);
+
   console.log("\n=======================================================");
   console.log("🎉 DATABASE SEEDING COMPLETED SUCCESSFULLY!");
   console.log("=======================================================");
@@ -543,7 +660,7 @@ async function runSeed() {
   console.log(`  • Test Cases:         ${totalCases} (titles, steps, types, tags)`);
   console.log(`  • Revisions Seeded:   ${totalRevisions} (immutable history v1 -> v2)`);
   console.log(`  • Test Plans:         ${totalPlans}`);
-  console.log(`  • Test Runs:          ${totalRuns} (completed, in-progress)`);
+  console.log(`  • Test Runs:          ${totalRuns} (completed, in-progress, not_started)`);
   console.log(`  • Snapshotted Cases:  ${totalRunCases} (frozen v1 snapshots)`);
   console.log(`  • Execution Attempts: ${totalAttempts} (append-only retest trails)`);
   console.log("=======================================================\n");
