@@ -1,4 +1,4 @@
-import { pgTable, text, varchar, timestamp, uniqueIndex, index } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, timestamp, uniqueIndex, index, integer, jsonb } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
 export const users = pgTable("users", {
@@ -89,12 +89,89 @@ export const modules = pgTable("modules", {
   index("modules_status_idx").on(table.status),
 ]);
 
+export const testCases = pgTable("test_cases", {
+  id: text("id").primaryKey(),
+  projectId: text("project_id")
+    .notNull()
+    .references(() => projects.id, { onDelete: "cascade" }),
+  moduleId: text("module_id")
+    .references(() => modules.id, { onDelete: "set null" }),
+  stableId: varchar("stable_id", { length: 32 }).notNull(), // e.g. "APP-001"
+  sequenceNumber: integer("sequence_number").notNull(),
+  title: varchar("title", { length: 500 }).notNull(),
+  description: text("description"),
+  preconditions: text("preconditions"),
+  expectedResult: text("expected_result"),
+  priority: varchar("priority", { length: 20 }).notNull().default("medium"), // 'critical' | 'high' | 'medium' | 'low'
+  lifecycle: varchar("lifecycle", { length: 20 }).notNull().default("draft"), // 'draft' | 'ready' | 'deprecated'
+  testTypes: text("test_types").array().notNull().default([]), // Multi-label taxonomy
+  tags: text("tags").array().notNull().default([]),
+  ownerId: text("owner_id").references(() => users.id, { onDelete: "set null" }),
+  revision: integer("revision").notNull().default(1),
+  createdBy: text("created_by")
+    .notNull()
+    .references(() => users.id, { onDelete: "restrict" }),
+  updatedBy: text("updated_by").references(() => users.id, { onDelete: "set null" }),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+}, (table) => [
+  uniqueIndex("test_cases_project_stable_id_idx").on(table.projectId, table.stableId),
+  uniqueIndex("test_cases_project_sequence_idx").on(table.projectId, table.sequenceNumber),
+  index("test_cases_project_id_idx").on(table.projectId),
+  index("test_cases_module_id_idx").on(table.moduleId),
+  index("test_cases_lifecycle_idx").on(table.lifecycle),
+  index("test_cases_priority_idx").on(table.priority),
+]);
+
+export const testCaseSteps = pgTable("test_case_steps", {
+  id: text("id").primaryKey(),
+  testCaseId: text("test_case_id")
+    .notNull()
+    .references(() => testCases.id, { onDelete: "cascade" }),
+  stepNumber: integer("step_number").notNull(),
+  instruction: text("instruction").notNull(),
+  expectedResult: text("expected_result"),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+}, (table) => [
+  uniqueIndex("test_case_steps_case_order_idx").on(table.testCaseId, table.stepNumber),
+  index("test_case_steps_case_id_idx").on(table.testCaseId),
+]);
+
+export interface StepSnapshot {
+  stepNumber: number;
+  instruction: string;
+  expectedResult?: string | null;
+}
+
+export const testCaseRevisions = pgTable("test_case_revisions", {
+  id: text("id").primaryKey(),
+  testCaseId: text("test_case_id")
+    .notNull()
+    .references(() => testCases.id, { onDelete: "cascade" }),
+  revisionNumber: integer("revision_number").notNull(),
+  title: varchar("title", { length: 500 }).notNull(),
+  description: text("description"),
+  preconditions: text("preconditions"),
+  expectedResult: text("expected_result"),
+  stepsSnapshot: jsonb("steps_snapshot").notNull(), // StepSnapshot[]
+  changeSummary: text("change_summary"),
+  changedBy: text("changed_by")
+    .notNull()
+    .references(() => users.id, { onDelete: "restrict" }),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+}, (table) => [
+  uniqueIndex("test_case_revisions_case_rev_idx").on(table.testCaseId, table.revisionNumber),
+  index("test_case_revisions_case_id_idx").on(table.testCaseId),
+]);
+
 // Relational mappings
 export const usersRelations = relations(users, ({ many }) => ({
   memberships: many(workspaceMembers),
   ownedWorkspaces: many(workspaces),
   sessions: many(sessions),
   createdProjects: many(projects),
+  createdTestCases: many(testCases, { relationName: "testCaseCreator" }),
+  ownedTestCases: many(testCases, { relationName: "testCaseOwner" }),
 }));
 
 export const workspacesRelations = relations(workspaces, ({ one, many }) => ({
@@ -127,6 +204,7 @@ export const projectsRelations = relations(projects, ({ one, many }) => ({
     references: [users.id],
   }),
   modules: many(modules),
+  testCases: many(testCases),
 }));
 
 export const modulesRelations = relations(modules, ({ one, many }) => ({
@@ -142,6 +220,48 @@ export const modulesRelations = relations(modules, ({ one, many }) => ({
   children: many(modules, {
     relationName: "subModules",
   }),
+  testCases: many(testCases),
+}));
+
+export const testCasesRelations = relations(testCases, ({ one, many }) => ({
+  project: one(projects, {
+    fields: [testCases.projectId],
+    references: [projects.id],
+  }),
+  module: one(modules, {
+    fields: [testCases.moduleId],
+    references: [modules.id],
+  }),
+  creator: one(users, {
+    fields: [testCases.createdBy],
+    references: [users.id],
+    relationName: "testCaseCreator",
+  }),
+  owner: one(users, {
+    fields: [testCases.ownerId],
+    references: [users.id],
+    relationName: "testCaseOwner",
+  }),
+  steps: many(testCaseSteps),
+  revisions: many(testCaseRevisions),
+}));
+
+export const testCaseStepsRelations = relations(testCaseSteps, ({ one }) => ({
+  testCase: one(testCases, {
+    fields: [testCaseSteps.testCaseId],
+    references: [testCases.id],
+  }),
+}));
+
+export const testCaseRevisionsRelations = relations(testCaseRevisions, ({ one }) => ({
+  testCase: one(testCases, {
+    fields: [testCaseRevisions.testCaseId],
+    references: [testCases.id],
+  }),
+  changer: one(users, {
+    fields: [testCaseRevisions.changedBy],
+    references: [users.id],
+  }),
 }));
 
 export type User = typeof users.$inferSelect;
@@ -153,3 +273,9 @@ export type Project = typeof projects.$inferSelect;
 export type NewProject = typeof projects.$inferInsert;
 export type Module = typeof modules.$inferSelect;
 export type NewModule = typeof modules.$inferInsert;
+export type TestCase = typeof testCases.$inferSelect;
+export type NewTestCase = typeof testCases.$inferInsert;
+export type TestCaseStep = typeof testCaseSteps.$inferSelect;
+export type NewTestCaseStep = typeof testCaseSteps.$inferInsert;
+export type TestCaseRevision = typeof testCaseRevisions.$inferSelect;
+export type NewTestCaseRevision = typeof testCaseRevisions.$inferInsert;
